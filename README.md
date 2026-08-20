@@ -18,7 +18,7 @@ Un progetto solo, guardato da tre lati.
 
 | | Pagina | Cos'è |
 |---|---|---|
-| 📐 | [Planimetria](https://worldwidejack.github.io/jack-tools/camera/planimetria.html) | La stanza in scala — 14,64 m² |
+| 📐 | [Planimetria](https://worldwidejack.github.io/jack-tools/camera/planimetria.html) | La stanza in scala — 14,64 m², mobili al 38% |
 | 🧊 | [Camera 3D](https://worldwidejack.github.io/jack-tools/camera/3d.html) | La stessa stanza, girabile |
 | 👕 | [Archivio guardaroba](https://worldwidejack.github.io/jack-tools/camera/guardaroba.html) | Tutti i capi schedati: tier, colori, cosa tenere |
 
@@ -30,7 +30,8 @@ Gli script di After Effects/Premiere e i software Python sono solo **elencati** 
 ---
 
 Il repo è pubblico solo perché GitHub Pages sul piano gratuito funziona così.
-Non c'è dentro nessun dato personale: niente nome completo, niente indirizzo, niente foto.
+Non c'è dentro nessun dato personale: niente nome completo, niente indirizzo, niente documenti.
+Le uniche immagini sono le foto dei capi nell'archivio guardaroba (vestiti, nessuna faccia).
 Un `robots.txt` blocca l'indicizzazione sui motori di ricerca.
 
 La roba privata sta in un altro repo, chiuso.
