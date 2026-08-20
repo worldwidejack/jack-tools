@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏝️ Isola dei Gatti</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-user-select:none; }
+  html, body { height:100%; overflow:hidden; }
+  body {
+    font-family:"Comic Sans MS","Segoe UI","Trebuchet MS",sans-serif;
+    background:linear-gradient(#c9edfb 0%, #dff2fb 40%, #f9e6e9 52%, #a2d6f0 52.2%, #8fc9e8 100%);
+    color:#2a2839; display:flex; flex-direction:column;
+  }
+  button { font-family:inherit; cursor:pointer; border:none; }
+
+  /* ===== header risorse ===== */
+  #header {
+    display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;
+    padding:8px 10px; background:#fff7e8; border-bottom:3px solid #2a2839; z-index:10;
+  }
+  .stat {
+    background:#fff; border:3px solid #2a2839; border-radius:10px;
+    box-shadow:3px 3px 0 rgba(42,40,57,.85);
+    padding:3px 12px; font-weight:bold; font-size:1.02em;
+    display:flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .stat small { font-weight:normal; font-size:.72em; opacity:.7; }
+  #fishCount { color:#1d6fb0; font-size:1.12em; }
+  #levelStat { background:#e9f9db; }
+  #shellStat { background:#ffe9f2; display:none; }
+
+  /* ===== layout ===== */
+  #main { flex:1; display:flex; min-height:0; }
+  #sceneWrap {
+    flex:1; position:relative; display:flex; align-items:center; justify-content:center;
+    padding:14px; min-width:0;
+  }
+  #game {
+    display:block; image-rendering:pixelated; image-rendering:crisp-edges;
+    width:min(100%, calc((100vh - 150px) * 1.538));
+    border:3px solid #2a2839; border-radius:10px;
+    box-shadow:5px 5px 0 rgba(42,40,57,.7);
+    cursor:pointer; touch-action:manipulation; background:#c9edfb;
+  }
+  #hint {
+    position:absolute; left:50%; top:38%; transform:translateX(-70%);
+    background:#fff; border:3px solid #2a2839; border-radius:12px;
+    box-shadow:3px 3px 0 rgba(42,40,57,.85);
+    padding:4px 12px; font-weight:bold; font-size:.9em; pointer-events:none;
+    animation:hintBob 1.4s ease-in-out infinite;
+  }
+  @keyframes hintBob { 50% { margin-top:-8px; } }
+  .floatNum {
+    position:absolute; font-weight:bold; font-size:20px; color:#1d6fb0;
+    pointer-events:none; z-index:20; text-shadow:0 2px 0 #fff, 0 0 4px #fff;
+    animation:floatUp 1s ease-out forwards;
+  }
+  @keyframes floatUp { from { opacity:1; transform:translateY(0); }
+                       to   { opacity:0; transform:translateY(-70px); } }
+  #toast {
+    position:absolute; top:20px; left:50%; transform:translateX(-50%) scale(0);
+    background:#fff7e8; border:3px solid #2a2839; border-radius:12px;
+    box-shadow:3px 3px 0 rgba(42,40,57,.85);
+    padding:7px 18px; font-weight:bold; z-index:30; transition:transform .25s;
+  }
+  #toast.show { transform:translateX(-50%) scale(1); }
+
+  /* ===== negozio ===== */
+  #panel {
+    width:330px; background:#fff7e8; border-left:3px solid #2a2839;
+    display:flex; flex-direction:column; overflow-y:auto; padding:12px 10px; gap:8px;
+  }
+  #panel h2 { font-size:.85em; color:#a3763a; margin:2px 4px 0; letter-spacing:1.5px; }
+  .shopItem {
+    display:flex; align-items:center; gap:9px; text-align:left;
+    background:#fff; border:3px solid #2a2839; border-radius:10px; padding:6px 9px;
+    box-shadow:3px 3px 0 rgba(42,40,57,.85);
+    transition:transform .08s, background .15s;
+  }
+  .shopItem:not(:disabled):hover { background:#f2fbff; transform:translate(-1px,-1px); }
+  .shopItem:not(:disabled):active { transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(42,40,57,.85); }
+  .shopItem:disabled { opacity:.45; cursor:not-allowed; filter:grayscale(.5); }
+  .shopItem .icon { width:40px; height:40px; flex:none; display:flex; align-items:center; justify-content:center; }
+  .shopItem .icon canvas { image-rendering:pixelated; }
+  .shopItem .info { flex:1; min-width:0; }
+  .shopItem .name { font-weight:bold; font-size:.9em; }
+  .shopItem .desc { font-size:.74em; opacity:.72; }
+  .shopItem .cost { font-size:.84em; font-weight:bold; color:#1d6fb0; }
+  .shopItem .owned {
+    background:#e9f9db; border:2px solid #2a2839; border-radius:8px;
+    min-width:34px; text-align:center; font-weight:bold; padding:2px 6px; font-size:.85em;
+  }
+  .shopItem.upg .owned { background:#ffe9f2; }
+  #footerBtns { display:flex; gap:10px; margin-top:auto; padding-top:10px; }
+  #footerBtns button {
+    flex:1; padding:7px; border-radius:10px; font-weight:bold;
+    border:3px solid #2a2839; box-shadow:3px 3px 0 rgba(42,40,57,.85);
+  }
+  #footerBtns button:active { transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(42,40,57,.85); }
+  #saveBtn { background:#e9f9db; }
+  #resetBtn { background:#ffe3e3; }
+  #saveInfo { text-align:center; font-size:.7em; opacity:.55; padding:4px 0 0; }
+
+  @media (max-width:700px) {
+    #main { flex-direction:column; }
+    #sceneWrap { padding:8px; }
+    #game { width:100%; }
+    #panel { width:100%; max-height:42vh; border-left:none; border-top:3px solid #2a2839; }
+    .stat { font-size:.88em; padding:2px 9px; }
+    #header { gap:7px; }
+  }
+</style>
+</head>
+<body>
+
+  <div id="header">
+    <div class="stat">🐟 <span id="fishCount">0</span></div>
+    <div class="stat"><span id="fps">0</span><small>&nbsp;🐟/sec</small></div>
+    <div class="stat" id="levelStat">🏝️ <small>Livello isola:</small>&nbsp;<span id="level">1</span></div>
+    <div class="stat" id="shellStat">🐚 <span id="shells">0</span></div>
+  </div>
+
+  <div id="main">
+    <div id="sceneWrap">
+      <canvas id="game" width="400" height="260"></canvas>
+      <div id="hint">Clicca sull'isola! 🐟</div>
+      <div id="toast"></div>
+    </div>
+
+    <div id="panel">
+      <h2>🏗️ EDIFICI</h2>
+      <div id="buildingShop"></div>
+      <h2>✨ POTENZIAMENTI</h2>
+      <div id="upgradeShop"></div>
+      <div id="footerBtns">
+        <button id="saveBtn">💾 Salva</button>
+        <button id="resetBtn">🗑️ Reset</button>
+      </div>
+      <div id="saveInfo">Salvataggio automatico ogni 5s</div>
+    </div>
+  </div>
+
+<script>
+"use strict";
+/* =====================================================================
+   CONFIGURAZIONE — bilanciamento tutto qui
+   ===================================================================== */
+const CFG = {
+  baseClick: 1,
+  tickMs: 100,
+  saveMs: 5000,
+  costGrowth: 1.15,
+  offlineCapSec: 7200,           // max 2 ore di produzione offline
+
+  buildings: [
+    { id:"barca",    name:"Barchetta da pesca",   baseCost:15,    prod:0.5 },
+    { id:"capanna",  name:"Capanna del pescatore", baseCost:100,   prod:3   },
+    { id:"molo",     name:"Molo",                  baseCost:600,   prod:12  },
+    { id:"faro",     name:"Faro",                  baseCost:3500,  prod:55  },
+    { id:"villaggio",name:"Casetta dei gatti",     baseCost:20000, prod:250 }
+  ],
+  upgrades: [
+    { id:"click", name:"Zampe veloci", desc:"Pesci per click ×2",  baseCost:50,  growth:6, mult:2   },
+    { id:"prod",  name:"Super esche",  desc:"Produzione ×1.5",     baseCost:200, growth:7, mult:1.5 }
+  ],
+  levelThresholds: [50, 300, 1500, 8000, 40000, 200000, 1000000],
+  shellsPerLevel: 1,
+  maxCats: 6
+};
+const SAVE_KEY = "isolaDeiGatti_v2";
+
+/* =====================================================================
+   PALETTE
+   ===================================================================== */
+const PAL = {
+  out:"#2a2839",
+  grass:"#a4dd7f", grassHi:"#93d673", sand:"#f6e4b3",
+  faceL:"#eecb90", faceR:"#d9ad70",
+  sky:"#c9edfb", skyMid:"#dff2fb", skyPink:"#f9e6e9",
+  sea:"#a2d6f0", seaLine:"#85c4e4", foam:"#cfeef9", wave:"#eef9fe",
+  sun:"#fbe27a", cloud:"#ffffff"
+};
+const CAT_COLORS = ["#f2a25f","#ffffff","#3a3848","#a8a8b8","#f2c98f","#c98f5f"];
+
+/* =====================================================================
+   SPRITE ENGINE — sprite come stringhe, outline nero automatico
+   ===================================================================== */
+function makeSprite(rows, map, outline = true) {
+  const h = rows.length, w = rows[0].length;
+  const px = [];
+  for (let y = 0; y < h + 2; y++) px.push(new Array(w + 2).fill(null));
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const ch = rows[y][x];
+    if (ch !== "." && map[ch]) px[y + 1][x + 1] = map[ch];
+  }
+  if (outline) {
+    for (let y = 0; y < h + 2; y++) for (let x = 0; x < w + 2; x++) {
+      if (px[y][x]) continue;
+      const near = [[0,1],[0,-1],[1,0],[-1,0]].some(([dy,dx]) => {
+        const yy = y + dy, xx = x + dx;
+        return yy >= 0 && yy < h + 2 && xx >= 0 && xx < w + 2 && px[yy][xx] && px[yy][xx] !== PAL.out;
+      });
+      if (near) px[y][x] = PAL.out;
+    }
+  }
+  return { w: w + 2, h: h + 2, px };
+}
+function drawSprite(c, s, x, y, scale = 1, flip = false) {
+  x = Math.round(x); y = Math.round(y);
+  for (let r = 0; r < s.h; r++) for (let q = 0; q < s.w; q++) {
+    const col = s.px[r][q]; if (!col) continue;
+    const cx = flip ? s.w - 1 - q : q;
+    c.fillStyle = col;
+    c.fillRect(x + cx * scale, y + r * scale, scale, scale);
+  }
+}
+// disegna con ancora in basso-centro
+function drawAt(c, s, cx, by, scale = 1, flip = false) {
+  drawSprite(c, s, cx - s.w * scale / 2, by - s.h * scale, scale, flip);
+}
+
+/* ===== dati sprite ===== */
+const SPR = {};
+const HOUSE_ROWS = [
+  "......RRRR......",
+  "....RRRRRRRR....",
+  "..RRRRRRRRRRRR..",
+  "RRRRRRRRRRRRRRRR",
+  "KKKKKKKKKKKKKKKK",
+  ".WWWWWWWWWWWWWW.",
+  ".WTTWWWWWWWWTTW.",
+  ".WTTWWWDDWWWTTW.",
+  ".WWWWWWDDWWWWWW.",
+  ".WWWWWWDDWWWWWW."
+];
+const houseMap = roof => ({ R:roof, K:PAL.out, W:"#f6cba3", T:"#86d4cc", D:"#6bbcb4" });
+SPR.houseCoral = makeSprite(HOUSE_ROWS, houseMap("#f0937d"));
+SPR.houseBlue  = makeSprite(HOUSE_ROWS, houseMap("#a9d9e8"));
+SPR.houseLav   = makeSprite(HOUSE_ROWS, houseMap("#c7b7e8"));
+
+SPR.hut = makeSprite([
+  ".....SSSS.....",
+  "...SSSSSSSS...",
+  ".SSSSSSSSSSSS.",
+  "SSSSSSSSSSSSSS",
+  ".wwwwwwwwwwww.",
+  ".wwwwwdddwwww.",
+  ".wwwwwdddwwww.",
+  ".wwwwwdddwwww."
+], { S:"#f0cf7a", w:"#cf9a63", d:"#7a5a3a" });
+
+SPR.lighthouse = makeSprite([
+  "...RRRR...",
+  "..RRRRRR..",
+  "..YYYYYY..",
+  "..YYYYYY..",
+  "..WWWWWW..",
+  "..RRRRRR..",
+  "..RRRRRR..",
+  "..WWWWWW..",
+  "..WWWWWW..",
+  ".RRRRRRRR.",
+  ".RRRRRRRR.",
+  ".WWWWWWWW.",
+  ".WWWWWWWW.",
+  ".RRRRRRRR.",
+  "RRRRRRRRRR",
+  "RRRRRRRRRR"
+], { R:"#e86a5f", W:"#ffffff", Y:"#ffe488" });
+
+SPR.boat = makeSprite([
+  "....WWW.......",
+  "....WWWW......",
+  "....WWWWW.....",
+  ".....b........",
+  ".b...b......b.",
+  ".bbbbbbbbbbbb.",
+  "..bbbbbbbbbb.."
+], { W:"#ffffff", b:"#b57e4b" });
+
+SPR.pier = makeSprite([
+  "......pppppppppppppppppp",
+  "......pppppppppppppppppp",
+  "...pppppppppppppppppp...",
+  "...pppppppppppppppppp...",
+  "pppppppppppppppppp......",
+  "pppppppppppppppppp......",
+  ".q....q.....q....q......",
+  ".q....q.....q....q......"
+], { p:"#d8a76a", q:"#8a6238" });
+
+SPR.palm = makeSprite([
+  "...gg....gg...",
+  ".gggggggggggg.",
+  "gggggggggggggg",
+  "gg..gggggg..gg",
+  "......bb......",
+  "......bb......",
+  "......bb......",
+  "......bb......",
+  "......bb......",
+  "......bb......",
+  ".....bbb......"
+], { g:"#7fc860", b:"#a97449" });
+
+SPR.bush = makeSprite([
+  "..gggg..",
+  ".gggggg.",
+  "ggpgggpg",
+  "gggggggg",
+  ".gggggg."
+], { g:"#8fce6d", p:"#f78fb8" });
+
+SPR.flowers = makeSprite([
+  ".p...y.",
+  "ppp.yyy",
+  ".g...g.",
+  ".g...g."
+], { p:"#f78fb8", y:"#ffd66e", g:"#6dae52" });
+
+SPR.shell = makeSprite([
+  ".ppp.",
+  "ppppp",
+  "p.p.p",
+  ".p.p."
+], { p:"#f7b8d0" });
+
+SPR.crab = makeSprite([
+  "r.....r",
+  ".rrrrr.",
+  ".rkrkr.",
+  ".rrrrr.",
+  "r.r.r.r"
+], { r:"#ef7d6d", k:"#2a2839" });
+
+SPR.umbrella = makeSprite([
+  "....rrr....",
+  "..rwrrrwr..",
+  ".rrwrrrwrr.",
+  "rrrwrrrwrrr",
+  ".....b.....",
+  ".....b.....",
+  ".....b.....",
+  ".....b....."
+], { r:"#f0937d", w:"#ffffff", b:"#8a6238" });
+
+SPR.paw = makeSprite([
+  "c..c..c",
+  "c..c..c",
+  ".ccccc.",
+  "ccccccc",
+  "ccccccc",
+  ".ccccc."
+], { c:"#f2a5c0" });
+
+SPR.fish = makeSprite([
+  "..bbb.....",
+  ".bbbbb..b.",
+  "bkbbbbbbbb",
+  ".bbbbb..b.",
+  "..bbb....."
+], { b:"#6cc4e8", k:"#2a2839" });
+
+SPR.sun = makeSprite([
+  "...ssss...",
+  ".ssssssss.",
+  ".ssssssss.",
+  "ssssssssss",
+  "ssssssssss",
+  "ssssssssss",
+  "ssssssssss",
+  ".ssssssss.",
+  ".ssssssss.",
+  "...ssss..."
+], { s:PAL.sun }, false);
+
+SPR.cloud = makeSprite([
+  "....wwwwww.......",
+  "..wwwwwwwwww.ww..",
+  ".wwwwwwwwwwwwwww.",
+  "wwwwwwwwwwwwwwwww",
+  ".wwwwwwwwwwwwwww."
+], { w:PAL.cloud }, false);
+
+/* gatti: sit + 2 frame di camminata, generati per colore */
+const CAT_SIT_ROWS = [
+  ".c..c.....",
+  ".cccc.....",
+  ".ckck.....",
+  ".cpcc.....",
+  ".ccccc....",
+  ".cccccc..c",
+  ".ccccccc.c",
+  ".ccccccc.c",
+  ".ccccccccc"
+];
+const CAT_WALK1_ROWS = [
+  ".c.c.........",
+  ".ccc.......c.",
+  ".ckcc......c.",
+  ".ccccccccccc.",
+  ".ccccccccccc.",
+  ".ccccccccc...",
+  ".cc..cc..cc.."
+];
+const CAT_WALK2_ROWS = [
+  ".c.c.........",
+  ".ccc.......c.",
+  ".ckcc......c.",
+  ".ccccccccccc.",
+  ".ccccccccccc.",
+  ".ccccccccc...",
+  "..cc.cc...cc."
+];
+function lum(hex) { // luminosità approssimata per scegliere occhi chiari/scuri
+  const n = parseInt(hex.slice(1), 16);
+  return ((n >> 16) & 255) * .3 + ((n >> 8) & 255) * .6 + (n & 255) * .1;
+}
+const catCache = {};
+function catSprites(color) {
+  if (!catCache[color]) {
+    const eye = lum(color) < 110 ? "#ffffff" : PAL.out;
+    const m = { c:color, k:eye, p:"#f2a0b5" };
+    catCache[color] = {
+      sit:  makeSprite(CAT_SIT_ROWS, m),
+      w1:   makeSprite(CAT_WALK1_ROWS, m),
+      w2:   makeSprite(CAT_WALK2_ROWS, m)
+    };
+  }
+  return catCache[color];
+}
+
+/* =====================================================================
+   TERRENO ISOMETRICO — isola a blocchi, prerenderizzata
+   ===================================================================== */
+const W = 400, H = 260, HORIZON = 108;
+const OX = 188, OY = 136, HZ = 8, BASE = 10;
+// S = sabbia h1, G = erba h2, H = collinetta erba h3
+const MAP = [
+  "..GGHHH..",
+  ".GGGHHHG.",
+  ".GGGGGGGG",
+  "SGGGGGGG.",
+  "SSGGGGGG.",
+  "SSSGGGG..",
+  "SSSSS....",
+  ".SSS....."
+];
+const TILE_H = { S:1, G:2, H:3 };
+const TILE_TOP = { S:PAL.sand, G:PAL.grass, H:PAL.grassHi };
+function cellH(i, j) {
+  const ch = (MAP[j] || "")[i];
+  return TILE_H[ch] || 0;
+}
+// centro della cella sullo schermo
+function anchor(i, j) {
+  return { x: OX + (i - j) * 12 + 12, y: OY + (i + j) * 6 - cellH(i, j) * HZ + 6 };
+}
+
+const cv = document.getElementById("game");
+const ctx = cv.getContext("2d");
+const isl = document.createElement("canvas"); isl.width = W; isl.height = H;
+
+function buildIsland() {
+  const ic = isl.getContext("2d");
+  ic.clearRect(0, 0, W, H);
+  const cells = [];
+  for (let j = 0; j < MAP.length; j++)
+    for (let i = 0; i < MAP[j].length; i++)
+      if (MAP[j][i] !== ".") cells.push({ i, j });
+  cells.sort((a, b) => (a.i + a.j) - (b.i + b.j));
+  for (const { i, j } of cells) {
+    const h = cellH(i, j);
+    const px = OX + (i - j) * 12, py = OY + (i + j) * 6 - h * HZ;
+    const depth = h * HZ + BASE;
+    for (let x = 0; x < 24; x++) {
+      const k = Math.min(x, 23 - x);
+      const rTop = 5 - Math.floor(k / 2);
+      const yb = 11 - rTop;
+      ic.fillStyle = TILE_TOP[MAP[j][i]];
+      ic.fillRect(px + x, py + rTop, 1, yb - rTop + 1);
+      ic.fillStyle = PAL.out;                       // bordo sotto la superficie
+      ic.fillRect(px + x, py + yb + 1, 1, 1);
+      ic.fillStyle = x < 12 ? PAL.faceL : PAL.faceR; // fianchi sabbiosi
+      ic.fillRect(px + x, py + yb + 2, 1, depth - 1);
+    }
+  }
+  // contorno nero della silhouette
+  const img = ic.getImageData(0, 0, W, H), d = img.data;
+  const solid = (x, y) => x >= 0 && x < W && y >= 0 && y < H && d[(y * W + x) * 4 + 3] > 0;
+  const edge = [];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (!solid(x, y)) continue;
+    if (!solid(x+1,y) || !solid(x-1,y) || !solid(x,y+1) || !solid(x,y-1)) edge.push([x, y]);
+  }
+  ic.fillStyle = PAL.out;
+  for (const [x, y] of edge) ic.fillRect(x, y, 1, 1);
+}
+buildIsland();
+
+/* =====================================================================
+   STATO DI GIOCO
+   ===================================================================== */
+let S = defaultState();
+function defaultState() {
+  return {
+    fish:0, totalFish:0, shells:0, level:1,
+    buildings:CFG.buildings.map(() => 0),
+    upgrades:CFG.upgrades.map(() => 0),
+    ts:Date.now()
+  };
+}
+const fmt = n => {
+  if (n < 1000) return Math.floor(n).toString();
+  const u = [["B",1e9],["M",1e6],["k",1e3]];
+  for (const [s,v] of u) if (n >= v) return (n/v).toFixed(n < v*10 ? 2 : 1) + s;
+};
+const buildingCost = i => Math.ceil(CFG.buildings[i].baseCost * Math.pow(CFG.costGrowth, S.buildings[i]));
+const upgradeCost  = i => Math.ceil(CFG.upgrades[i].baseCost  * Math.pow(CFG.upgrades[i].growth, S.upgrades[i]));
+const clickPower   = () => CFG.baseClick * Math.pow(CFG.upgrades[0].mult, S.upgrades[0]);
+const prodMult     = () => Math.pow(CFG.upgrades[1].mult, S.upgrades[1]);
+const fishPerSec   = () => CFG.buildings.reduce((t,b,i) => t + b.prod * S.buildings[i], 0) * prodMult();
+
+/* =====================================================================
+   POSIZIONI SULLA MAPPA (edifici, decorazioni, gatti)
+   ===================================================================== */
+// slot visivi: ogni acquisto (fino al limite) fa comparire lo sprite sull'isola
+const BUILD_SLOTS = [
+  { spr:() => SPR.boat, slots:"water", pos:[[62,206],[338,196],[92,238]], bob:true },       // barchetta
+  { spr:() => SPR.hut, slots:"tile", pos:[[1,5],[0,5]] },                                    // capanna
+  { spr:() => SPR.pier, slots:"fixed", pos:[[80,214]] },                                     // molo
+  { spr:() => SPR.lighthouse, slots:"tile", pos:[[8,2]] },                                   // faro
+  { spr:null, slots:"houses", pos:[[5,0],[2,1],[6,2]] }                                      // casette
+];
+const HOUSE_VARIANTS = ["houseCoral","houseBlue","houseLav"];
+const DECOR = [  // sbloccate una per livello (dal livello 2)
+  { s:"bush", t:[6,4] }, { s:"flowers", t:[3,2] }, { s:"shell", t:[0,6] },
+  { s:"crab", t:[2,7] }, { s:"umbrella", t:[0,4] }, { s:"palm", t:[7,1] },
+  { s:"bush", t:[4,3] }
+];
+const WAYPOINTS = [[2,2],[4,2],[6,3],[3,4],[5,4],[1,4],[2,5],[4,5],[2,6],[5,1],[3,3],[6,1]]
+  .map(([i,j]) => anchor(i,j));
+const BIGCAT = anchor(3, 6);  // gatto grande cliccabile
+
+/* gatti che passeggiano */
+const cats = [];
+function ensureCats() {
+  const want = Math.min(1 + S.level, CFG.maxCats);
+  while (cats.length < want) {
+    const wp = WAYPOINTS[Math.floor(Math.random() * WAYPOINTS.length)];
+    cats.push({
+      color: CAT_COLORS[(cats.length + 1) % CAT_COLORS.length],
+      x: wp.x, y: wp.y, tx: wp.x, ty: wp.y,
+      state: "sit", timer: 1 + Math.random() * 4, flip: false, anim: Math.random() * 10
+    });
+  }
+}
+function updateCats(dt) {
+  for (const c of cats) {
+    c.anim += dt;
+    if (c.state === "sit") {
+      c.timer -= dt;
+      if (c.timer <= 0) {
+        const wp = WAYPOINTS[Math.floor(Math.random() * WAYPOINTS.length)];
+        c.tx = wp.x; c.ty = wp.y; c.state = "walk";
+        c.flip = c.tx > c.x;  // sprite guarda a sinistra: flip per andare a destra
+      }
+    } else {
+      const dx = c.tx - c.x, dy = c.ty - c.y, dist = Math.hypot(dx, dy);
+      const step = 13 * dt;
+      if (dist <= step) { c.x = c.tx; c.y = c.ty; c.state = "sit"; c.timer = 2 + Math.random() * 5; }
+      else { c.x += dx / dist * step; c.y += dy / dist * step; }
+    }
+  }
+}
+
+/* =====================================================================
+   RENDER DELLA SCENA
+   ===================================================================== */
+const clouds = [
+  { x:40,  y:20, sc:2, sp:3.2 },
+  { x:230, y:44, sc:1, sp:2.1 },
+  { x:330, y:14, sc:1, sp:2.7 }
+];
+const waves = [];
+for (let i = 0; i < 16; i++) {
+  waves.push({
+    x: Math.random() * W,
+    y: HORIZON + 8 + Math.random() * (H - HORIZON - 16),
+    len: 5 + Math.random() * 9, sp: 3 + Math.random() * 5
+  });
+}
+let hopT = 0;   // animazione salto del gatto grande
+
+function drawScene(t, dt) {
+  // cielo
+  ctx.fillStyle = PAL.sky;     ctx.fillRect(0, 0, W, 72);
+  ctx.fillStyle = PAL.skyMid;  ctx.fillRect(0, 72, W, 22);
+  ctx.fillStyle = PAL.skyPink; ctx.fillRect(0, 94, W, HORIZON - 94);
+  drawSprite(ctx, SPR.sun, 66, 22, 2);
+  for (const c of clouds) {
+    c.x += c.sp * dt;
+    if (c.x > W + 60) c.x = -80;
+    drawSprite(ctx, SPR.cloud, c.x, c.y, c.sc);
+  }
+  // mare
+  ctx.fillStyle = PAL.seaLine; ctx.fillRect(0, HORIZON, W, 2);
+  ctx.fillStyle = PAL.sea;     ctx.fillRect(0, HORIZON + 2, W, H - HORIZON - 2);
+  // schiuma attorno all'isola (ellisse a scanline, resta croccante)
+  ctx.fillStyle = PAL.foam;
+  for (let dy = -17; dy <= 17; dy++) {
+    const hw = Math.round(108 * Math.sqrt(1 - (dy / 17) ** 2));
+    ctx.fillRect(200 - hw, 207 + dy, hw * 2, 1);
+  }
+  // ondine bianche
+  ctx.fillStyle = PAL.wave;
+  for (const wv of waves) {
+    wv.x += wv.sp * dt;
+    if (wv.x > W + 20) wv.x = -20;
+    ctx.fillRect(Math.round(wv.x), Math.round(wv.y), Math.round(wv.len), 1);
+  }
+  // isola
+  ctx.drawImage(isl, 0, 0);
+
+  /* elementi dinamici, ordinati per baseline (painter) */
+  const items = [];
+  const add = (y, fn) => items.push({ y, fn });
+
+  // palma fissa
+  const pa = anchor(1, 3);
+  add(pa.y + 3, () => drawAt(ctx, SPR.palm, pa.x, pa.y + 3));
+
+  // edifici comprati
+  CFG.buildings.forEach((b, bi) => {
+    const conf = BUILD_SLOTS[bi];
+    const n = Math.min(S.buildings[bi], conf.pos.length);
+    for (let k = 0; k < n; k++) {
+      let x, y;
+      if (conf.slots === "tile" || conf.slots === "houses") {
+        const [i, j] = conf.pos[k]; const a = anchor(i, j); x = a.x; y = a.y + 3;
+      } else { [x, y] = conf.pos[k]; }
+      const spr = conf.slots === "houses" ? SPR[HOUSE_VARIANTS[k]] : conf.spr();
+      const bobY = conf.bob ? Math.round(Math.sin(t * 2 + k * 2) * 2) : 0;
+      add(y, () => drawAt(ctx, spr, x, y + bobY));
+    }
+  });
+
+  // decorazioni sbloccate col livello
+  for (let l = 0; l < S.level - 1 && l < DECOR.length; l++) {
+    const dcf = DECOR[l], a = anchor(dcf.t[0], dcf.t[1]);
+    add(a.y + 3, () => drawAt(ctx, SPR[dcf.s], a.x, a.y + 3));
+  }
+
+  // gatti che passeggiano
+  for (const c of cats) {
+    const sp = catSprites(c.color);
+    const spr = c.state === "sit" ? sp.sit : (Math.floor(c.anim * 5) % 2 ? sp.w1 : sp.w2);
+    add(c.y, () => drawAt(ctx, spr, c.x, c.y + 3, 1, c.flip));
+  }
+
+  // gatto grande cliccabile (con saltello)
+  if (hopT > 0) hopT = Math.max(0, hopT - dt * 3.2);
+  const hopY = -Math.round(Math.sin(hopT * Math.PI) * 7);
+  add(BIGCAT.y + 2, () => drawAt(ctx, catSprites(CAT_COLORS[0]).sit, BIGCAT.x, BIGCAT.y + 5 + hopY, 2));
+
+  items.sort((a, b) => a.y - b.y);
+  for (const it of items) it.fn();
+}
+
+let lastFrame = performance.now();
+function frame(now) {
+  const dt = Math.min((now - lastFrame) / 1000, .1);
+  lastFrame = now;
+  updateCats(dt);
+  drawScene(now / 1000, dt);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* =====================================================================
+   INTERAZIONE
+   ===================================================================== */
+const wrap = document.getElementById("sceneWrap");
+function spawnFloat(text, x, y) {
+  const el = document.createElement("span");
+  el.className = "floatNum";
+  el.textContent = text;
+  el.style.left = (x + (Math.random() * 26 - 13)) + "px";
+  el.style.top = y + "px";
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+// converte coordinate interne del canvas → pixel visualizzati nel wrapper
+function canvasToWrap(x, y) {
+  const r = cv.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+  return { x: r.left - w.left + x / W * r.width, y: r.top - w.top + y / H * r.height };
+}
+
+cv.addEventListener("click", e => {
+  const gain = clickPower();
+  gainFish(gain);
+  hopT = 1;
+  const w = wrap.getBoundingClientRect();
+  spawnFloat(`+${fmt(gain)} 🐟`, e.clientX - w.left, e.clientY - w.top);
+  const hint = document.getElementById("hint");
+  if (hint) hint.remove();
+  renderUI();
+});
+
+function gainFish(n) { S.fish += n; S.totalFish += n; checkLevel(); }
+
+function checkLevel() {
+  const newLevel = 1 + CFG.levelThresholds.filter(v => S.totalFish >= v).length;
+  while (S.level < newLevel) {
+    S.level++;
+    S.shells += CFG.shellsPerLevel;
+    ensureCats();
+    showToast(`🎉 Livello isola ${S.level}! Nuovi abitanti in arrivo… +${CFG.shellsPerLevel} 🐚`);
+  }
+}
+
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+/* =====================================================================
+   NEGOZIO
+   ===================================================================== */
+function iconCanvas(spr) {
+  const c = document.createElement("canvas");
+  const sc = Math.max(1, Math.floor(34 / Math.max(spr.w, spr.h)));
+  c.width = spr.w * sc; c.height = spr.h * sc;
+  c.style.width = c.width + "px"; c.style.height = c.height + "px";
+  drawSprite(c.getContext("2d"), spr, 0, 0, sc);
+  return c;
+}
+const BUILD_ICONS = [SPR.boat, SPR.hut, SPR.pier, SPR.lighthouse, SPR.houseCoral];
+const UPG_ICONS = [SPR.paw, SPR.fish];
+
+CFG.buildings.forEach((b, i) => {
+  const btn = document.createElement("button");
+  btn.className = "shopItem";
+  btn.innerHTML = `<span class="icon"></span>
+    <span class="info"><div class="name">${b.name}</div>
+    <div class="desc">+${b.prod} 🐟/sec</div>
+    <div class="cost">🐟 <span class="c"></span></div></span>
+    <span class="owned">0</span>`;
+  btn.querySelector(".icon").appendChild(iconCanvas(BUILD_ICONS[i]));
+  btn.onclick = () => buyBuilding(i);
+  document.getElementById("buildingShop").appendChild(btn);
+});
+CFG.upgrades.forEach((u, i) => {
+  const btn = document.createElement("button");
+  btn.className = "shopItem upg";
+  btn.innerHTML = `<span class="icon"></span>
+    <span class="info"><div class="name">${u.name}</div>
+    <div class="desc">${u.desc}</div>
+    <div class="cost">🐟 <span class="c"></span></div></span>
+    <span class="owned">Lv 0</span>`;
+  btn.querySelector(".icon").appendChild(iconCanvas(UPG_ICONS[i]));
+  btn.onclick = () => buyUpgrade(i);
+  document.getElementById("upgradeShop").appendChild(btn);
+});
+const bBtns = [...document.getElementById("buildingShop").children];
+const uBtns = [...document.getElementById("upgradeShop").children];
+
+function buyBuilding(i) {
+  const cost = buildingCost(i);
+  if (S.fish < cost) return;
+  S.fish -= cost; S.buildings[i]++;
+  // sparkle sull'isola dove appare l'edificio
+  const conf = BUILD_SLOTS[i];
+  const k = Math.min(S.buildings[i], conf.pos.length) - 1;
+  let x, y;
+  if (conf.slots === "tile" || conf.slots === "houses") {
+    const a = anchor(conf.pos[k][0], conf.pos[k][1]); x = a.x; y = a.y;
+  } else { [x, y] = conf.pos[k]; }
+  const p = canvasToWrap(x, y - 14);
+  spawnFloat("✨", p.x, p.y);
+  renderUI();
+}
+function buyUpgrade(i) {
+  const cost = upgradeCost(i);
+  if (S.fish < cost) return;
+  S.fish -= cost; S.upgrades[i]++;
+  showToast(i === 0 ? "🐾 Click potenziato!" : "🎣 Produzione potenziata!");
+  renderUI();
+}
+
+/* =====================================================================
+   UI (contatori e negozio)
+   ===================================================================== */
+function renderUI() {
+  document.getElementById("fishCount").textContent = fmt(S.fish);
+  document.getElementById("fps").textContent =
+    (Math.round(fishPerSec() * 10) / 10).toLocaleString("it-IT");
+  document.getElementById("level").textContent = S.level;
+  if (S.shells > 0) {
+    document.getElementById("shellStat").style.display = "flex";
+    document.getElementById("shells").textContent = S.shells;
+  }
+  bBtns.forEach((btn, i) => {
+    const cost = buildingCost(i);
+    btn.querySelector(".c").textContent = fmt(cost);
+    btn.querySelector(".owned").textContent = S.buildings[i];
+    btn.disabled = S.fish < cost;
+  });
+  uBtns.forEach((btn, i) => {
+    const cost = upgradeCost(i);
+    btn.querySelector(".c").textContent = fmt(cost);
+    btn.querySelector(".owned").textContent = "Lv " + S.upgrades[i];
+    btn.disabled = S.fish < cost;
+  });
+}
+
+/* =====================================================================
+   GAME LOOP LOGICO — produzione passiva su tempo reale
+   ===================================================================== */
+let lastTick = Date.now();
+setInterval(() => {
+  const now = Date.now();
+  const dt = (now - lastTick) / 1000;
+  lastTick = now;
+  const gain = fishPerSec() * dt;
+  if (gain > 0) gainFish(gain);
+  renderUI();
+}, CFG.tickMs);
+
+/* =====================================================================
+   SALVATAGGIO
+   ===================================================================== */
+function save() {
+  S.ts = Date.now();
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {}
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return;
+    S = Object.assign(defaultState(), JSON.parse(raw));
+    while (S.buildings.length < CFG.buildings.length) S.buildings.push(0);
+    while (S.upgrades.length  < CFG.upgrades.length)  S.upgrades.push(0);
+    // produzione offline (max 2h)
+    const away = Math.min((Date.now() - S.ts) / 1000, CFG.offlineCapSec);
+    const gain = away * fishPerSec();
+    if (gain >= 1) {
+      gainFish(gain);
+      setTimeout(() => showToast(`😺 Bentornato! I gatti hanno pescato ${fmt(gain)} 🐟`), 600);
+    }
+  } catch (e) {}
+}
+setInterval(save, CFG.saveMs);
+window.addEventListener("beforeunload", save);
+
+document.getElementById("saveBtn").onclick = () => { save(); showToast("💾 Partita salvata!"); };
+document.getElementById("resetBtn").onclick = () => {
+  if (!confirm("Vuoi davvero ricominciare da zero? 🙀")) return;
+  localStorage.removeItem(SAVE_KEY);
+  S = defaultState();
+  cats.length = 0;
+  ensureCats();
+  renderUI();
+  showToast("🌱 Nuova isola!");
+};
+
+/* ===== avvio ===== */
+load();
+ensureCats();
+renderUI();
+</script>
+</body>
+</html>
