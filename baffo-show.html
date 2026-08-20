@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Family Feud Party Game",
+  "schemaVersion": 1,
+  "description": "Il Baffo Show! Party game italiano stile game show: sondaggi, classifiche e trivia. Modalità 2 giocatori, Duello vs Stella (CPU) e Solo Run. Presentatore vocale con personalità, strikes, ruba, timer, mascotte rubberhose.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Baffo Show! — Party Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --viola:#3b1f5e;
+    --viola-scuro:#241239;
+    --giallo:#ffd93d;
+    --giallo-scuro:#f0b90b;
+    --rosa:#ff5da2;
+    --turchese:#2ee6d6;
+    --rosso:#ff4757;
+    --crema:#fff6e3;
+    --ink:#1a1a2e;
+    /* alias per compatibilità col vecchio tema */
+    --blu-scuro:var(--viola-scuro);
+    --blu:var(--viola);
+    --blu-chiaro:#5a3a8a;
+    --oro:var(--giallo);
+    --oro-scuro:var(--giallo-scuro);
+    --verde:var(--turchese);
+    --bianco:var(--crema);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Fredoka','Segoe UI',system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(255,217,61,.12) 0%, rgba(0,0,0,0) 45%),
+      repeating-conic-gradient(from 8deg at 50% 38%, var(--viola) 0deg 12deg, #46266e 12deg 24deg),
+      var(--viola-scuro);
+    color:var(--crema);
+    min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;
+    padding:16px;
+  }
+  @keyframes wobble{0%,100%{transform:rotate(-1.4deg);}50%{transform:rotate(1.4deg);}}
+  @keyframes bigwobble{0%,100%{transform:rotate(-3deg) scale(1);}50%{transform:rotate(3deg) scale(1.03);}}
+  .screen{display:none;width:100%;max-width:900px;flex-direction:column;align-items:center;}
+  .screen.active{display:flex;}
+
+  h1.logo{
+    font-family:'Luckiest Guy','Fredoka',cursive;
+    font-size:clamp(34px,8vw,68px);
+    text-align:center;
+    color:var(--giallo);
+    -webkit-text-stroke:2px var(--ink);
+    text-shadow:4px 4px 0 var(--rosa), 7px 7px 0 var(--ink), 0 12px 24px rgba(0,0,0,.5);
+    letter-spacing:2px;
+    margin:16px 0 4px;
+    animation:bigwobble 3.2s ease-in-out infinite;
+  }
+  .tagline{opacity:.9;margin-bottom:22px;text-align:center;font-weight:600;color:var(--turchese);text-shadow:1px 1px 0 var(--ink);}
+
+  .card{
+    background:var(--crema);
+    color:var(--ink);
+    border:4px solid var(--ink);
+    border-radius:22px 18px 24px 20px;
+    padding:22px;
+    width:100%;
+    box-shadow:8px 8px 0 rgba(26,26,46,.85);
+    transform:rotate(-.4deg);
+  }
+  .card label{color:#4a4260;}
+  .card input[type=text], .card select{
+    background:#fff;color:var(--ink);border:3px solid var(--ink);
+  }
+  .card input[type=text]:focus{border-color:var(--rosa);}
+
+  /* selettore modalità */
+  .modes{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;}
+  .mode-card{
+    flex:1;min-width:130px;cursor:pointer;text-align:center;
+    background:#fff;border:3px solid var(--ink);border-radius:16px;
+    padding:12px 8px;font-family:'Fredoka',sans-serif;color:var(--ink);
+    box-shadow:4px 4px 0 rgba(26,26,46,.8);
+    transition:transform .1s;
+  }
+  .mode-card .mi{font-size:28px;display:block;}
+  .mode-card b{font-family:'Luckiest Guy',cursive;font-size:16px;letter-spacing:.5px;display:block;margin:4px 0 2px;}
+  .mode-card span{font-size:12px;opacity:.7;display:block;}
+  .mode-card.selected{
+    background:var(--giallo);
+    transform:rotate(-1.5deg) scale(1.04);
+    box-shadow:5px 5px 0 var(--ink);
+  }
+  .mode-card:active{transform:translateY(2px);}
+
+  label{display:block;font-size:14px;opacity:.85;margin:12px 0 4px;}
+  input[type=text], select{
+    width:100%;padding:12px 14px;border-radius:14px;border:3px solid var(--ink);
+    background:#fff;color:var(--ink);font-size:17px;outline:none;
+    font-family:'Fredoka',sans-serif;
+    box-shadow:3px 3px 0 rgba(26,26,46,.5);
+  }
+  input[type=text]:focus{border-color:var(--rosa);}
+  select{cursor:pointer;}
+
+  .btn{
+    display:inline-block;cursor:pointer;
+    font-family:'Luckiest Guy','Fredoka',cursive;font-weight:400;
+    font-size:19px;padding:14px 28px;border-radius:16px 14px 17px 13px;
+    background:var(--giallo);
+    color:var(--ink);border:3px solid var(--ink);
+    box-shadow:0 5px 0 var(--ink), 0 10px 18px rgba(0,0,0,.35);
+    transition:transform .08s, box-shadow .08s;
+    letter-spacing:1px;
+  }
+  .btn:hover{transform:rotate(-1deg);}
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn.secondary{
+    background:var(--turchese);color:var(--ink);
+  }
+  .btn.small{font-size:13px;padding:8px 16px;letter-spacing:.5px;}
+
+  /* ---------- presentatore ---------- */
+  .host{
+    display:flex;align-items:flex-start;gap:14px;width:100%;
+    margin:14px 0;
+  }
+  .host-avatar{
+    flex:0 0 84px;width:84px;height:84px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#5a3a8a,var(--viola));
+    border:4px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:4px 4px 0 rgba(26,26,46,.8);
+    overflow:hidden;
+    animation:wobble 3s ease-in-out infinite;
+  }
+  .host-avatar img.face-img{
+    width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;
+  }
+  .star-accent{
+    width:60px;height:auto;display:block;margin:0 auto 4px;
+    filter:drop-shadow(0 4px 10px rgba(255,201,60,.5));
+    animation:floaty 2.6s ease-in-out infinite;
+  }
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-7px) rotate(4deg);}}
+  .host-bubble{
+    position:relative;flex:1;
+    background:var(--crema);color:var(--ink);
+    border:3px solid var(--ink);
+    border-radius:18px 16px 20px 15px;padding:12px 16px;
+    font-size:16.5px;font-weight:600;line-height:1.35;
+    min-height:58px;display:flex;align-items:center;
+    box-shadow:5px 5px 0 rgba(26,26,46,.8);
+  }
+  .host-bubble::before{
+    content:"";position:absolute;left:-12px;top:26px;
+    border:11px solid transparent;border-right-color:var(--ink);border-left:0;
+  }
+  .host-bubble::after{
+    content:"";position:absolute;left:-7px;top:29px;
+    border:8px solid transparent;border-right-color:var(--crema);border-left:0;
+  }
+  .host-bubble.speaking{animation:wobble 1s ease-in-out infinite;}
+  .host-bubble.speaking{border-color:var(--rosa);box-shadow:5px 5px 0 var(--rosa);}
+
+  /* ---------- scoreboard ---------- */
+  .scoreboard{display:flex;gap:12px;width:100%;margin-bottom:10px;}
+  .team{
+    flex:1;background:var(--crema);border:3px solid var(--ink);
+    border-radius:16px 14px 17px 13px;padding:10px 14px;text-align:center;
+    color:var(--ink);
+    box-shadow:4px 4px 0 rgba(26,26,46,.8);
+    transition:transform .25s, box-shadow .25s;
+    position:relative;
+  }
+  .team.active-team{
+    transform:rotate(-1.2deg) scale(1.03);
+    box-shadow:5px 5px 0 var(--rosa);
+    border-color:var(--rosa);
+  }
+  .team .tname{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .team .tscore{font-family:'Luckiest Guy',cursive;font-size:32px;color:var(--ink);text-shadow:2px 2px 0 var(--giallo);}
+  .team .turn-tag{
+    font-size:11px;font-weight:800;color:#fff;background:var(--rosa);
+    border:2px solid var(--ink);
+    border-radius:20px;padding:2px 10px;display:inline-block;margin-top:2px;
+    visibility:hidden;
+  }
+  .team.active-team .turn-tag{visibility:visible;}
+  .team img.star-face{
+    width:44px;height:44px;border-radius:50%;border:3px solid var(--ink);
+    object-fit:cover;position:absolute;top:-16px;right:-10px;transform:rotate(8deg);
+    background:var(--viola);display:none;
+    box-shadow:2px 2px 0 rgba(26,26,46,.7);
+  }
+
+  /* ---------- barra info round ---------- */
+  .roundbar{
+    display:flex;justify-content:space-between;align-items:center;
+    width:100%;margin-bottom:8px;flex-wrap:wrap;gap:8px;
+  }
+  .round-label{font-family:'Luckiest Guy',cursive;color:var(--giallo);font-size:20px;letter-spacing:1px;text-shadow:2px 2px 0 var(--ink);}
+  .pot{
+    background:var(--turchese);border:3px solid var(--ink);color:var(--ink);
+    font-weight:800;border-radius:14px 12px 15px 11px;padding:6px 14px;font-size:16px;
+    box-shadow:3px 3px 0 rgba(26,26,46,.8);
+  }
+
+  /* ---------- timer ---------- */
+  .timerwrap{display:flex;align-items:center;gap:10px;}
+  .timer{
+    width:58px;height:58px;border-radius:50%;
+    background:conic-gradient(var(--turchese) 100%, var(--viola-scuro) 0);
+    display:flex;align-items:center;justify-content:center;
+    border:3px solid var(--ink);box-shadow:3px 3px 0 rgba(26,26,46,.8);
+  }
+  .timer-inner{
+    width:44px;height:44px;border-radius:50%;background:var(--crema);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Luckiest Guy',cursive;font-size:19px;color:var(--ink);
+  }
+  .timer.warn .timer-inner{color:var(--rosso);}
+  .timer.warn{animation:bigwobble .5s ease-in-out infinite;}
+
+  /* ---------- domanda ---------- */
+  .question{
+    width:100%;background:var(--crema);color:var(--ink);
+    border:4px solid var(--ink);
+    border-radius:20px 16px 22px 15px;padding:18px 20px;text-align:center;
+    font-size:clamp(18px,3.4vw,24px);font-weight:700;line-height:1.3;
+    margin-bottom:14px;min-height:70px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:6px 6px 0 rgba(26,26,46,.85);
+    transform:rotate(.4deg);
+  }
+  .qtype{
+    display:inline-block;font-family:'Luckiest Guy',cursive;font-size:13px;letter-spacing:1.5px;
+    border:2px solid var(--ink);
+    border-radius:20px;padding:4px 14px 2px;margin-bottom:8px;color:var(--ink);
+    box-shadow:2px 2px 0 rgba(26,26,46,.8);
+    transform:rotate(-2deg);
+  }
+  .qtype.sondaggio{background:var(--turchese);}
+  .qtype.trivia{background:var(--rosa);color:#fff;}
+  .qtype.classifica{background:var(--giallo);}
+
+  /* ---------- microfono ---------- */
+  .btn.mic{font-size:20px;padding:14px 18px;}
+  .btn.mic.listening{
+    background:linear-gradient(180deg,#ff6b6e 0%,var(--rosso) 100%);
+    color:#fff;box-shadow:0 4px 0 #7c1315, 0 0 18px rgba(229,56,59,.8);
+    animation:pulse .9s infinite;
+  }
+  .voice-row{display:flex;align-items:center;gap:10px;margin-top:16px;cursor:pointer;}
+  .voice-row input{width:20px;height:20px;accent-color:var(--oro);cursor:pointer;}
+
+  /* ---------- tabellone ---------- */
+  .board{width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  .slot{
+    display:flex;justify-content:space-between;align-items:center;
+    background:#5a3a8a;
+    border:3px solid var(--ink);border-radius:14px 12px 15px 11px;
+    padding:12px 16px;font-size:18px;font-weight:700;
+    min-height:52px;color:var(--crema);
+    box-shadow:4px 4px 0 rgba(26,26,46,.8);
+    transition:background .3s, border-color .3s, transform .15s;
+  }
+  .slot:nth-child(odd){transform:rotate(-.4deg);}
+  .slot:nth-child(even){transform:rotate(.4deg);}
+  .slot .num{
+    background:var(--ink);border-radius:10px;width:34px;height:34px;
+    display:flex;align-items:center;justify-content:center;color:var(--giallo);
+    font-family:'Luckiest Guy',cursive;
+  }
+  .slot.revealed{
+    background:var(--giallo);
+    color:var(--ink);
+    animation:pop .35s ease;
+  }
+  .slot.revealed .num{background:var(--ink);color:var(--giallo);}
+  .slot.missed{
+    background:#3d3a52;
+    color:#b9b4cf;border-color:#4d4966;
+  }
+  .slot.missed .num{background:#2a2740;color:#8a86a3;}
+  .slot .pts{font-family:'Luckiest Guy',cursive;font-size:21px;}
+  @keyframes pop{0%{transform:scale(.92);}60%{transform:scale(1.04);}100%{transform:scale(1);}}
+
+  /* ---------- strikes ---------- */
+  .strikes{display:flex;gap:10px;justify-content:center;margin-bottom:12px;}
+  .strike{
+    width:46px;height:46px;border-radius:12px;border:3px solid #4d4966;
+    background:#2a2740;display:flex;align-items:center;justify-content:center;
+    font-size:30px;font-weight:900;color:transparent;transition:all .2s;
+  }
+  .strike.on{color:#fff;border-color:var(--ink);background:var(--rosso);
+    transform:rotate(-6deg);box-shadow:3px 3px 0 rgba(26,26,46,.8);
+    text-shadow:2px 2px 0 var(--ink);}
+  .strike.on:nth-child(2){transform:rotate(5deg);}
+
+  /* ---------- input risposta ---------- */
+  .answer-row{display:flex;gap:10px;width:100%;margin-bottom:10px;}
+  .answer-row input{flex:1;}
+  #big-strike{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(10,5,20,.55);z-index:50;pointer-events:none;
+  }
+  #big-strike span{
+    font-size:clamp(120px,30vw,260px);font-weight:900;color:var(--rosso);
+    text-shadow:0 0 40px rgba(229,56,59,.9);
+    animation:slam .5s ease;
+  }
+  @keyframes slam{0%{transform:scale(3);opacity:0;}60%{transform:scale(.95);opacity:1;}100%{transform:scale(1);}}
+
+  .banner{
+    width:100%;text-align:center;border-radius:12px;padding:10px 14px;
+    font-weight:900;font-size:18px;margin-bottom:12px;display:none;
+  }
+  .banner.steal{display:block;background:var(--rosa);color:#fff;
+    border:3px solid var(--ink);box-shadow:4px 4px 0 rgba(26,26,46,.8);
+    font-family:'Luckiest Guy',cursive;letter-spacing:1px;
+    animation:pulse 1s infinite, wobble 1.5s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.35);}}
+
+  .controls-row{display:flex;gap:10px;width:100%;justify-content:center;flex-wrap:wrap;}
+
+  /* ---------- fine round / partita ---------- */
+  .summary{font-size:18px;text-align:center;line-height:1.5;margin:10px 0 18px;}
+  .winner{
+    font-family:'Luckiest Guy',cursive;
+    font-size:clamp(26px,6vw,46px);color:var(--giallo);
+    -webkit-text-stroke:1.5px var(--ink);
+    text-align:center;text-shadow:3px 3px 0 var(--rosa), 5px 5px 0 var(--ink);
+    margin:14px 0;animation:pop .5s ease, bigwobble 2.5s ease-in-out infinite;
+  }
+  .final-scores{display:flex;gap:14px;width:100%;margin:10px 0 8px;}
+  .knowledge{
+    width:100%;background:var(--crema);color:var(--ink);
+    border:3px solid var(--ink);border-radius:16px 14px 17px 13px;
+    box-shadow:5px 5px 0 rgba(26,26,46,.8);
+    padding:12px 16px;text-align:center;font-weight:600;line-height:1.5;
+    margin:6px 0 18px;
+  }
+  .knowledge b{color:var(--rosa);}
+
+  .loader{
+    border:5px solid var(--ink);border-top-color:var(--giallo);
+    border-radius:50%;width:52px;height:52px;
+    animation:spin 1s linear infinite;margin:18px auto;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .load-note{text-align:center;opacity:.75;font-size:14px;margin-top:6px;}
+
+  .paused-overlay{
+    position:fixed;inset:0;background:rgba(20,10,40,.92);z-index:40;
+    display:none;align-items:center;justify-content:center;flex-direction:column;gap:18px;
+  }
+  .paused-overlay.show{display:flex;}
+  .paused-overlay h2{font-family:'Luckiest Guy',cursive;font-size:48px;color:var(--giallo);letter-spacing:4px;text-shadow:3px 3px 0 var(--rosa),5px 5px 0 var(--ink);}
+
+  .footer-note{opacity:.5;font-size:12px;margin-top:18px;text-align:center;}
+</style>
+</head>
+<body>
+
+<!-- ============ SCHERMATA INIZIALE ============ -->
+<div id="screen-setup" class="screen active">
+  <img class="star-accent" id="star-setup" alt="" onerror="this.style.display='none'">
+  <h1 class="logo">IL BAFFO SHOW!</h1>
+  <div class="tagline">Sondaggi, classifiche e trivia col presentatore più baffuto della TV</div>
+
+  <div class="host">
+    <div class="host-avatar" aria-hidden="true">
+      <svg id="face-setup" width="52" height="52" viewBox="0 0 52 52"></svg>
+    </div>
+    <div class="host-bubble" id="bubble-setup">Signore e signori… benvenuti al BAFFO SHOW! Io sono il Baffo, e questi baffi hanno visto vincere e perdere gente migliore di voi. Scegliete come giocare… e occhio alla Stella: sembra carina, ma è una iena.</div>
+  </div>
+
+  <div class="card">
+    <label>Modalità di gioco</label>
+    <div class="modes">
+      <button class="mode-card" data-mode="pvp"><span class="mi">👥</span><b>2 Giocatori</b><span>squadra contro squadra</span></button>
+      <button class="mode-card selected" data-mode="duello"><span class="mi">⭐</span><b>Duello vs Stella</b><span>tu contro la Stella (CPU)</span></button>
+      <button class="mode-card" data-mode="solo"><span class="mi">🎯</span><b>Solo Run</b><span>punteggio, medaglie e record</span></button>
+    </div>
+    <div id="row-diff">
+      <label for="difficulty">Quanto dev'essere cattiva la Stella?</label>
+      <select id="difficulty">
+        <option value="facile">Stellina svogliata (facile)</option>
+        <option value="media" selected>Stella in forma (media)</option>
+        <option value="cattiva">Stella CATTIVISSIMA (difficile)</option>
+      </select>
+    </div>
+    <div id="row-name1">
+      <label for="name1" id="label-name1">Il tuo nome</label>
+      <input type="text" id="name1" maxlength="20" placeholder="Es. Jack" value="Squadra 1">
+    </div>
+    <div id="row-name2">
+      <label for="name2">Nome Squadra 2</label>
+      <input type="text" id="name2" maxlength="20" placeholder="Es. Gli Sfidanti" value="Squadra 2">
+    </div>
+    <label for="nrounds">Numero di round</label>
+    <select id="nrounds">
+      <option value="3">3 round (partita veloce)</option>
+      <option value="5" selected>5 round (classica)</option>
+      <option value="7">7 round (maratona)</option>
+    </select>
+    <label class="voice-row" for="voice-toggle">
+      <input type="checkbox" id="voice-toggle" checked>
+      <span>🎙️ <b>Modalità vocale</b>: leggo domande e commenti ad alta voce e potete rispondere parlando al microfono</span>
+    </label>
+    <div style="margin-top:10px;">
+      <button class="btn secondary small" id="btn-test-audio">🔊 Prova audio</button>
+      <span class="load-note" id="test-audio-note" style="display:inline-block;margin-left:8px;"></span>
+    </div>
+    <div class="load-note" id="voice-support-note" style="text-align:left;margin-top:8px;"></div>
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn" id="btn-start">INIZIA PARTITA!</button>
+    </div>
+  </div>
+  <div class="footer-note">Le domande vengono generate al volo dall'IA a ogni partita. Se la generazione non va a buon fine, entra in gioco un set di riserva: lo show non si ferma mai.</div>
+</div>
+
+<!-- ============ CARICAMENTO ============ -->
+<div id="screen-loading" class="screen">
+  <h1 class="logo">IL BAFFO SHOW!</h1>
+  <div class="host">
+    <div class="host-avatar"><svg id="face-loading" width="52" height="52" viewBox="0 0 52 52"></svg></div>
+    <div class="host-bubble" id="bubble-loading">Un attimo che scaldo il pubblico… e mi faccio dare le domande dalla regia!</div>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div class="loader"></div>
+    <div class="load-note" id="load-note">Generazione domande in corso…</div>
+  </div>
+</div>
+
+<!-- ============ GIOCO ============ -->
+<div id="screen-game" class="screen">
+  <div class="scoreboard">
+    <div class="team" id="team0">
+      <div class="tname"></div>
+      <div class="tscore">0</div>
+      <div class="turn-tag">IN GIOCO</div>
+    </div>
+    <div class="team" id="team1">
+      <img class="star-face" id="star-face" alt="" onerror="this.style.display='none'">
+      <div class="tname"></div>
+      <div class="tscore">0</div>
+      <div class="turn-tag">IN GIOCO</div>
+    </div>
+  </div>
+
+  <div class="roundbar">
+    <div class="round-label" id="round-label">ROUND 1</div>
+    <div class="pot" id="pot">MONTEPREMI: 0</div>
+    <div class="timerwrap">
+      <div class="timer" id="timer"><div class="timer-inner" id="timer-num">20</div></div>
+      <button class="btn secondary small" id="btn-reread" title="Rileggi la domanda ad alta voce">🔊</button>
+      <button class="btn secondary small" id="btn-pause">⏸ Pausa</button>
+    </div>
+  </div>
+
+  <div class="host">
+    <div class="host-avatar"><svg id="face-game" width="52" height="52" viewBox="0 0 52 52"></svg></div>
+    <div class="host-bubble" id="bubble-game">…</div>
+  </div>
+
+  <div style="text-align:center;width:100%;">
+    <span class="qtype" id="qtype">SONDAGGIO</span>
+  </div>
+  <div class="question" id="question-text"></div>
+
+  <div class="banner steal" id="steal-banner">🚨 OCCASIONE RUBA! Una sola risposta per portarsi via tutto! 🚨</div>
+
+  <div class="board" id="board"></div>
+
+  <div class="strikes" id="strikes">
+    <div class="strike">✖</div><div class="strike">✖</div><div class="strike">✖</div>
+  </div>
+
+  <div class="answer-row" id="answer-row">
+    <input type="text" id="answer-input" maxlength="60" placeholder="Scrivi la risposta e premi Invio…" autocomplete="off">
+    <button class="btn secondary mic" id="btn-mic" title="Rispondi a voce">🎤</button>
+    <button class="btn" id="btn-answer">RISPONDI</button>
+  </div>
+
+  <div class="controls-row" id="next-row" style="display:none;">
+    <button class="btn" id="btn-next">PROSSIMO ROUND ➜</button>
+  </div>
+</div>
+
+<!-- ============ FINE PARTITA ============ -->
+<div id="screen-end" class="screen">
+  <img class="star-accent" id="star-end" alt="" onerror="this.style.display='none'">
+  <h1 class="logo">FINE DELLO SHOW!</h1>
+  <div class="host">
+    <div class="host-avatar"><svg id="face-end" width="52" height="52" viewBox="0 0 52 52"></svg></div>
+    <div class="host-bubble" id="bubble-end"></div>
+  </div>
+  <div class="winner" id="winner-text"></div>
+  <div class="final-scores">
+    <div class="team" id="fteam0"><div class="tname"></div><div class="tscore"></div></div>
+    <div class="team" id="fteam1"><div class="tname"></div><div class="tscore"></div></div>
+  </div>
+  <div class="knowledge" id="knowledge"></div>
+  <div class="controls-row">
+    <button class="btn" id="btn-again">🔁 NUOVA PARTITA</button>
+  </div>
+</div>
+
+<div id="big-strike"><span>✖</span></div>
+
+<div class="paused-overlay" id="paused-overlay">
+  <h2>⏸ PAUSA</h2>
+  <div style="opacity:.8;">Il timer è fermo. Niente suggerimenti, eh… vi tengo d'occhio!</div>
+  <button class="btn" id="btn-resume">▶ RIPRENDI</button>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   INDOVINA LA RISPOSTA! — party game a 2 squadre stile Family Feud
+   Un solo file, JS vanilla. Domande generate via API Anthropic con
+   fallback locale. Presentatore testuale con personalità.
+   ===================================================================== */
+
+/* ---------------- COSTANTI ---------------- */
+const TURN_SECONDS = 20;
+const TRIVIA_POINTS = 150;
+const API_URL = "https://api.anthropic.com/v1/messages";
+const API_MODEL = "claude-sonnet-4-6";
+
+/* ---------------- DOMANDE DI RISERVA (fallback) ---------------- */
+const FALLBACK_SURVEYS = [
+  {type:"sondaggio", question:"Nomina qualcosa che si porta in spiaggia", answers:[
+    {text:"Ombrellone", points:100, aliases:["ombrello da spiaggia"]},
+    {text:"Telo mare", points:80, aliases:["asciugamano","telo"]},
+    {text:"Crema solare", points:60, aliases:["crema","protezione solare","solare"]},
+    {text:"Occhiali da sole", points:40, aliases:["occhiali"]},
+    {text:"Racchettoni", points:20, aliases:["racchette","beach tennis"]}
+  ]},
+  {type:"sondaggio", question:"Nomina un motivo per cui si arriva in ritardo al lavoro", answers:[
+    {text:"Traffico", points:100, aliases:["coda","ingorgo"]},
+    {text:"Sveglia non suonata", points:80, aliases:["sveglia","non ho sentito la sveglia","dormito troppo"]},
+    {text:"Mezzi pubblici in ritardo", points:60, aliases:["autobus","treno","metro","mezzi"]},
+    {text:"Non trovare le chiavi", points:40, aliases:["chiavi","chiavi perse"]},
+    {text:"Pigrizia", points:20, aliases:["poltrire","letto"]}
+  ]},
+  {type:"sondaggio", question:"Nomina un condimento popolare sulla pizza", answers:[
+    {text:"Mozzarella", points:100, aliases:["formaggio"]},
+    {text:"Pomodoro", points:80, aliases:["salsa di pomodoro","sugo"]},
+    {text:"Prosciutto", points:60, aliases:["prosciutto cotto","crudo"]},
+    {text:"Funghi", points:40, aliases:["champignon"]},
+    {text:"Salame piccante", points:20, aliases:["salame","diavola","peperoncino"]}
+  ]},
+  {type:"sondaggio", question:"Nomina qualcosa che la gente fa appena sveglia", answers:[
+    {text:"Prepara il caffè", points:100, aliases:["caffe","beve il caffe","colazione col caffe"]},
+    {text:"Controlla il telefono", points:80, aliases:["telefono","cellulare","guarda il telefono","social"]},
+    {text:"Va in bagno", points:60, aliases:["bagno","doccia","si lava"]},
+    {text:"Fa colazione", points:40, aliases:["colazione","mangia"]},
+    {text:"Si lava i denti", points:20, aliases:["denti","lavarsi i denti"]}
+  ]},
+  {type:"sondaggio", question:"Nomina qualcosa che si dimentica spesso a casa", answers:[
+    {text:"Le chiavi", points:100, aliases:["chiavi"]},
+    {text:"Il telefono", points:80, aliases:["telefono","cellulare"]},
+    {text:"Il portafoglio", points:60, aliases:["portafoglio","soldi"]},
+    {text:"L'ombrello", points:40, aliases:["ombrello"]},
+    {text:"I documenti", points:20, aliases:["documenti","carta d'identita","patente"]}
+  ]},
+  {type:"sondaggio", question:"Nomina un posto dove capita di fare la fila", answers:[
+    {text:"Alle poste", points:100, aliases:["poste","ufficio postale"]},
+    {text:"Al supermercato", points:80, aliases:["supermercato","cassa"]},
+    {text:"In banca", points:60, aliases:["banca"]},
+    {text:"Dal medico", points:40, aliases:["medico","dottore","ospedale","asl"]},
+    {text:"A un concerto", points:20, aliases:["concerto","evento","stadio"]}
+  ]},
+  {type:"sondaggio", question:"Nomina qualcosa che si mangia al cinema", answers:[
+    {text:"Popcorn", points:100, aliases:["pop corn"]},
+    {text:"Nachos", points:80, aliases:["patatine di mais"]},
+    {text:"Gelato", points:60, aliases:["cono","magnum"]},
+    {text:"Caramelle", points:40, aliases:["caramelle gommose","dolciumi"]},
+    {text:"Patatine", points:20, aliases:["chips"]}
+  ]},
+  {type:"sondaggio", question:"Nomina un animale domestico comune", answers:[
+    {text:"Cane", points:100, aliases:["cagnolino"]},
+    {text:"Gatto", points:80, aliases:["gattino","micio"]},
+    {text:"Pesce rosso", points:60, aliases:["pesce","pesciolino"]},
+    {text:"Criceto", points:40, aliases:[]},
+    {text:"Coniglio", points:20, aliases:["coniglietto"]}
+  ]}
+];
+const FALLBACK_TRIVIA = [
+  {type:"trivia", question:"Qual è la capitale dell'Australia?", answer:"Canberra", aliases:[]},
+  {type:"trivia", question:"Quanti lati ha un esagono?", answer:"Sei", aliases:["6"]},
+  {type:"trivia", question:"Quale pianeta è soprannominato 'il pianeta rosso'?", answer:"Marte", aliases:[]},
+  {type:"trivia", question:"Chi ha dipinto la Gioconda?", answer:"Leonardo da Vinci", aliases:["leonardo","da vinci"]},
+  {type:"trivia", question:"In che anno è caduto il muro di Berlino?", answer:"1989", aliases:["millenovecentottantanove"]},
+  {type:"trivia", question:"Qual è l'oceano più grande del mondo?", answer:"Oceano Pacifico", aliases:["pacifico"]},
+  {type:"trivia", question:"Chi ha scritto la Divina Commedia?", answer:"Dante Alighieri", aliases:["dante"]},
+  {type:"trivia", question:"Qual è il simbolo chimico dell'oro?", answer:"Au", aliases:[]}
+];
+const FALLBACK_RANKINGS = [
+  {type:"classifica", question:"Le 5 città più popolose del mondo (area urbana)", answers:[
+    {text:"Tokyo", points:100, aliases:["tokio"]},
+    {text:"Delhi", points:80, aliases:["nuova delhi","new delhi"]},
+    {text:"Shanghai", points:60, aliases:[]},
+    {text:"San Paolo", points:40, aliases:["sao paulo","san paolo del brasile"]},
+    {text:"Città del Messico", points:20, aliases:["mexico city"]}
+  ]},
+  {type:"classifica", question:"I 5 pianeti più grandi del Sistema Solare", answers:[
+    {text:"Giove", points:100, aliases:[]},
+    {text:"Saturno", points:80, aliases:[]},
+    {text:"Urano", points:60, aliases:[]},
+    {text:"Nettuno", points:40, aliases:[]},
+    {text:"Terra", points:20, aliases:[]}
+  ]},
+  {type:"classifica", question:"I 5 paesi più estesi del mondo", answers:[
+    {text:"Russia", points:100, aliases:[]},
+    {text:"Canada", points:80, aliases:[]},
+    {text:"Cina", points:60, aliases:[]},
+    {text:"Stati Uniti", points:40, aliases:["usa","america","stati uniti d'america"]},
+    {text:"Brasile", points:20, aliases:[]}
+  ]},
+  {type:"classifica", question:"I 5 fiumi più lunghi del mondo", answers:[
+    {text:"Nilo", points:100, aliases:[]},
+    {text:"Rio delle Amazzoni", points:80, aliases:["amazzoni","amazzonia","rio amazzoni"]},
+    {text:"Fiume Azzurro", points:60, aliases:["yangtze","chang jiang","azzurro"]},
+    {text:"Mississippi", points:40, aliases:["mississippi missouri"]},
+    {text:"Enisej", points:20, aliases:["yenisei","jenisej","enissei"]}
+  ]},
+  {type:"classifica", question:"Le 5 lingue più parlate al mondo (totale parlanti)", answers:[
+    {text:"Inglese", points:100, aliases:[]},
+    {text:"Cinese mandarino", points:80, aliases:["cinese","mandarino"]},
+    {text:"Hindi", points:60, aliases:[]},
+    {text:"Spagnolo", points:40, aliases:[]},
+    {text:"Francese", points:20, aliases:[]}
+  ]}
+];
+
+/* ---------------- PRESENTATORE: battute ---------------- */
+const HOST = {
+  roundIntroSurvey: [
+    "Abbiamo intervistato 100 persone… e le risposte più gettonate sono LÌ, su quel tabellone. {team}, fatemi vedere di che pasta siete fatti!",
+    "Il nostro sondaggio ha parlato, il tabellone è carico. {team}, tocca a voi… e vi conviene non deludermi!",
+    "Cento persone, cinque risposte, un tabellone che scotta. {team}, datemi qualcosa di GROSSO!",
+    "Signori, si va di sondaggio! {team}, il pubblico vi guarda… io pure, e sono molto più severo."
+  ],
+  roundIntroRanking: [
+    "Si cambia registro, signori: CLASSIFICA di cultura generale! Le 5 risposte sono in ordine, dalla numero uno alla numero cinque. {team}, fatemi vedere quanto avete studiato!",
+    "Tabellone di cultura generale! Niente opinioni stavolta: qui contano i FATTI. {team}, a voi… e occhio, perché il tabellone non perdona!",
+    "TOP 5 sul tabellone! {team}, chi becca la numero uno si prende i miei rispetti… e 100 punti sonanti!"
+  ],
+  roundIntroTrivia: [
+    "Cambio di ritmo: domanda SECCA, una sola risposta giusta, {points} punti sul piatto. {team}, cervello acceso!",
+    "Ora si fa sul serio: trivia da {points} punti. {team}, o la sapete o… vi guardo malissimo.",
+    "Domanda di cultura generale, {team}! Vale {points} punti. E niente facce da 'eh, ce l'ho sulla punta della lingua'…"
+  ],
+  topAnswer: [
+    "RISPOSTA AL TOP! IL TABELLONE È IMPAZZITO! Datemi il cinque… anzi no, datemi il CENTO!",
+    "BOOM! La numero UNO! Ecco perché amo questo gioco!",
+    "PRIMA RISPOSTA DEL TABELLONE! Qualcuno chiami i pompieri, qui va tutto a fuoco!"
+  ],
+  goodAnswer: [
+    "C'È! Sul tabellone! Vai così!",
+    "Eccola lì! Il sondaggio vi dà ragione!",
+    "Risposta buona! Il pubblico applaude… lo sento da qui!",
+    "SÌ signore! Si continua a macinare punti!"
+  ],
+  lowAnswer: [
+    "C'è… per un pelo! Anche gli ultimi posti del tabellone pagano, eh!",
+    "Presa! Non sarà la risposta del secolo, ma i punti sono punti!"
+  ],
+  strike1: [
+    "✖! Ma che mi hai risposto?! Il sondaggio dice NO!",
+    "✖! Mmmh… no. Il tabellone ti ha guardato e ha riso.",
+    "Prima X! Respirate, concentratevi… e soprattutto rispondete meglio!"
+  ],
+  strike2: [
+    "SECONDA ✖! Vi vedo tremare da qui… e fate bene!",
+    "✖ numero due! La squadra avversaria si sta già fregando le mani…",
+    "Due X! Un'altra così e questo round vi saluta con la manina!"
+  ],
+  strike3: [
+    "TERZA ✖!!! IL PUBBLICO È SENZA PAROLE! E io che vi avevo pure fatto i complimenti…",
+    "TRE X! Si spengono le luci sulla vostra corsia… e si accendono su quella avversaria!",
+    "STRIKE OUT! Tre X e il round vi scivola dalle mani!"
+  ],
+  stealPrompt: [
+    "{team}, ORA O MAI PIÙ: UNA risposta giusta e vi portate via TUTTO il montepremi. Parlatevi, ragionate… e sparate!",
+    "Occasione RUBA per {team}! Una sola cartuccia: o gloria o figuraccia!",
+    "{team}, il destino bussa: una risposta ancora nascosta e il bottino cambia casa!"
+  ],
+  stealSuccess: [
+    "L'HANNO RUBATO!!! INCREDIBILE! {team} scippa il montepremi sotto il naso degli avversari!",
+    "COLPO GROSSO! {team} entra dalla finestra e svuota la cassaforte!",
+    "RAPINA IN DIRETTA! {team} si porta via tutto! Qualcuno chiami la polizia… anzi no, è tutto regolare!"
+  ],
+  stealFail: [
+    "NO! Niente da fare! Il colpo fallisce e i punti restano a {team}! Che sollievo per loro…",
+    "Sbagliato! Il tabellone dice no e il montepremi resta al sicuro con {team}!",
+    "Il furto non riesce! {team} tiene i punti e tira un sospiro lungo così!"
+  ],
+  triviaCorrect: [
+    "ESATTO! {points} punti! Qualcuno qui ha studiato… o ha una fortuna sfacciata!",
+    "RISPOSTA GIUSTA! {points} punti dritti in classifica! Applausi!",
+    "CORRETTO! Bella lì! {points} punti e sorrisone!"
+  ],
+  triviaStrike: [
+    "✖! No no no… non è quella. Riprovate, il tempo corre!",
+    "✖! Sbagliato! Vi do un consiglio gratis: la prossima… ditela giusta.",
+    "✖! Ahia. Il pubblico ha fatto 'ooooh', e non era un 'ooooh' buono."
+  ],
+  timeout: [
+    "TEMPO SCADUTO! Il silenzio, signori… il suono più costoso di questo show. È una ✖!",
+    "DRIIIIN! Tempo finito! Non rispondere costa quanto sbagliare: ✖!",
+    "Il tempo è TIRANNO e voi eravate lì a guardarvi… ✖ automatica!"
+  ],
+  boardCleared: [
+    "TABELLONE COMPLETATO! Tutte le risposte trovate! {team}, siete delle MACCHINE!",
+    "PERCORSO NETTO! {team} ripulisce il tabellone come si deve! Standing ovation!"
+  ],
+  roundEndBank: [
+    "{team} incassa {points} punti! Il totale sale, la tensione pure!",
+    "{points} punti in cassaforte per {team}! Si vola al prossimo round!"
+  ],
+  roundEndZero: [
+    "Round a bocca asciutta, nessun punto assegnato. Succede… ma che tristezza, signori.",
+    "Zero punti in palio andati a segno. Il tabellone stasera è più cattivo di me."
+  ],
+  gameWin: [
+    "E IL VOSTRO CAMPIONE È… {team}!!! Con {points} punti! Abbracci, lacrime, coriandoli immaginari!",
+    "SIGNORE E SIGNORI, {team} VINCE LA SERATA con {points} punti! L'altra squadra… su col morale: c'è sempre la rivincita!"
+  ],
+  gameTie: [
+    "PAREGGIO?! In tanti anni di onorata carriera… va bene, ufficialmente vincete tutti. Ufficiosamente, esigo lo spareggio!"
+  ],
+  starTurn: [
+    "Tocca alla Stella! Afferra il microfono con la manina guantata… e ha quel sorrisetto che non mi piace per niente.",
+    "Palla alla Stella, signori! Silenzio in studio… si sente solo il suo luccichio.",
+    "La Stella ci pensa… la vedo sicura. TROPPO sicura."
+  ],
+  starGood: [
+    "La Stella la becca! Ma qualcuno la fermi, sta brillando di arroganza!",
+    "Risposta della Stella… ED È SUL TABELLONE! Ahia ahia ahia…",
+    "PRESA! E adesso fa pure l'inchino… insopportabile e adorabile."
+  ],
+  starBad: [
+    "✖ per la Stella! Ha sparato una scemenza COSMICA!",
+    "La Stella sbaglia! Vedo glitter di imbarazzo dappertutto!",
+    "✖! Anche le stelle cadono, signori… e questa è caduta malissimo!"
+  ],
+  soloOut: [
+    "TRE ✖! Il tabellone si chiude e il montepremi del round svanisce… il pubblico piange con te, campione.",
+    "Strike out! Round a mani vuote… ma il Baffo crede ancora in te. Più o meno.",
+    "TRE X! Ho visto tramonti meno tristi di questo round… avanti il prossimo!"
+  ],
+  soloEnd: [
+    "Fine della corsa, {team}! {points} punti totali… vediamo cosa dice il verdetto dei baffi!",
+    "Il gong! {team} chiude a quota {points}! Rullo di tamburi per il responso…"
+  ]
+};
+function say(category, vars) {
+  const pool = HOST[category];
+  let line = pool[Math.floor(Math.random() * pool.length)];
+  if (vars) for (const k in vars) line = line.split("{"+k+"}").join(vars[k]);
+  return line;
+}
+
+/* ---------------- FACCE DEL PRESENTATORE (placeholder SVG) ---------------- */
+function faceSVG(mood) {
+  // placeholder semplice: cerchio con espressione. La mascotte vera arriverà dopo.
+  const eyes = {
+    neutral: '<circle cx="18" cy="21" r="3" fill="#ffc93c"/><circle cx="34" cy="21" r="3" fill="#ffc93c"/>',
+    happy:   '<path d="M14 22 q4 -6 8 0" stroke="#ffc93c" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M30 22 q4 -6 8 0" stroke="#ffc93c" stroke-width="3" fill="none" stroke-linecap="round"/>',
+    shocked: '<circle cx="18" cy="20" r="4.5" fill="none" stroke="#ffc93c" stroke-width="2.5"/><circle cx="34" cy="20" r="4.5" fill="none" stroke="#ffc93c" stroke-width="2.5"/>',
+    deadpan: '<rect x="13" y="19" width="10" height="3" rx="1.5" fill="#ffc93c"/><rect x="29" y="19" width="10" height="3" rx="1.5" fill="#ffc93c"/>'
+  };
+  const mouth = {
+    neutral: '<path d="M18 36 q8 5 16 0" stroke="#ffc93c" stroke-width="3" fill="none" stroke-linecap="round"/>',
+    happy:   '<path d="M15 33 q11 12 22 0" stroke="#ffc93c" stroke-width="3" fill="none" stroke-linecap="round"/>',
+    shocked: '<ellipse cx="26" cy="37" rx="5" ry="7" fill="none" stroke="#ffc93c" stroke-width="2.5"/>',
+    deadpan: '<rect x="18" y="35" width="16" height="3" rx="1.5" fill="#ffc93c"/>'
+  };
+  return '<circle cx="26" cy="26" r="24" fill="none" stroke="#ffc93c" stroke-width="2" opacity=".5"/>' +
+         (eyes[mood]||eyes.neutral) + (mouth[mood]||mouth.neutral);
+}
+/* Avatar del conduttore: immagini dello showman se caricano, altrimenti
+   il placeholder SVG (cerchio con espressione). Stessi 4 stati d'animo. */
+const HOST_IMG = {
+  neutral: "https://d8j0ntlcm91z4.cloudfront.net/user_33mvcQzoT1tWHNBEdTETfo1TwrB/hf_20260808_013751_8b22a862-2b6f-4193-bac8-8c1a7e98a8a5_min.webp",
+  happy:   "https://d8j0ntlcm91z4.cloudfront.net/user_33mvcQzoT1tWHNBEdTETfo1TwrB/hf_20260808_013751_697281e5-454c-41b1-885e-51525b4b7ba1_min.webp",
+  shocked: "https://d8j0ntlcm91z4.cloudfront.net/user_33mvcQzoT1tWHNBEdTETfo1TwrB/hf_20260808_013751_20b2e41a-ba00-400b-bb12-4e948229d8bc_min.webp",
+  deadpan: "https://d8j0ntlcm91z4.cloudfront.net/user_33mvcQzoT1tWHNBEdTETfo1TwrB/hf_20260808_014752_2177176b-de43-4072-94c0-e64e7cc2032b_min.webp"
+};
+const STAR_FACES = {
+  smug:  "https://d8j0ntlcm91z4.cloudfront.net/user_33mvcQzoT1tWHNBEdTETfo1TwrB/hf_20260808_013751_d5b28f8f-b488-475c-a5be-bdb055a49d52_min.webp",
+  happy: "https://d8j0ntlcm91z4.cloudfront.net/user_33mvcQzoT1tWHNBEdTETfo1TwrB/hf_20260808_013751_5631b172-8812-402d-93f9-17038104f0a8_min.webp",
+  sad:   "https://d8j0ntlcm91z4.cloudfront.net/user_33mvcQzoT1tWHNBEdTETfo1TwrB/hf_20260808_013751_230631bd-b870-421d-964c-2dccc1ccd4e0_min.webp"
+};
+const STAR_IMG = "https://d8j0ntlcm91z4.cloudfront.net/user_33mvcQzoT1tWHNBEdTETfo1TwrB/hf_20260808_014842_d966ee32-fe69-43b0-ae0c-dc5400b0bb4e.png";
+let avatarReady = false;
+
+function setFace(mood) {
+  ["face-setup","face-loading","face-game","face-end"].forEach(id => {
+    const svg = document.getElementById(id);
+    if (!svg) return;
+    const wrap = svg.parentElement;
+    let img = wrap.querySelector("img.face-img");
+    if (avatarReady) {
+      if (!img) { img = document.createElement("img"); img.className = "face-img"; img.alt = ""; wrap.appendChild(img); }
+      img.src = HOST_IMG[mood] || HOST_IMG.neutral;
+      img.style.display = "block";
+      svg.style.display = "none";
+    } else {
+      if (img) img.style.display = "none";
+      svg.style.display = "block";
+      svg.innerHTML = faceSVG(mood);
+    }
+  });
+}
+
+(function preloadHostArt(){
+  // stella decorativa
+  ["star-setup","star-end"].forEach(id => { const el = document.getElementById(id); if (el) el.src = STAR_IMG; });
+  // volti del conduttore: si passa alle immagini solo se caricano TUTTE
+  const urls = Object.values(HOST_IMG);
+  if (urls.some(u => !/^https:/.test(u))) return; // placeholder non sostituiti
+  let ok = 0;
+  urls.forEach(u => {
+    const im = new Image();
+    im.onload = () => { ok++; if (ok === urls.length) { avatarReady = true; setFace("happy"); } };
+    im.src = u;
+  });
+})();
+
+/* ---------------- VOCE: sintesi (TTS) e riconoscimento (microfono) ---------------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+const TTS = ("speechSynthesis" in window) ? window.speechSynthesis : null;
+let voiceMode = false;
+let srBlocked = false;   // permessi microfono negati o servizio non disponibile
+let itVoice = null;
+let recog = null, listening = false;
+
+function pickVoice() {
+  if (!TTS) return;
+  const vs = TTS.getVoices();
+  itVoice = vs.find(v => v.lang && v.lang.toLowerCase().startsWith("it")) || null;
+}
+if (TTS) { pickVoice(); TTS.onvoiceschanged = pickVoice; }
+
+let ttsKeepAlive = null;
+function speak(text, onend) {
+  if (!voiceMode || !TTS) { if (onend) onend(); return; }
+  try {
+    TTS.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "it-IT";
+    if (itVoice) u.voice = itVoice;
+    u.rate = 1.06; u.pitch = 1.05; u.volume = 1;
+    let done = false;
+    const bubbles = document.querySelectorAll(".host-bubble");
+    bubbles.forEach(b => b.classList.add("speaking"));
+    const fin = () => {
+      if (done) return;
+      done = true;
+      bubbles.forEach(b => b.classList.remove("speaking"));
+      if (ttsKeepAlive) { clearInterval(ttsKeepAlive); ttsKeepAlive = null; }
+      if (onend) onend();
+    };
+    u.onend = fin; u.onerror = fin;
+    // rete di sicurezza: se il browser non emette onend, si prosegue comunque
+    setTimeout(fin, Math.min(25000, 1800 + text.length * 85));
+    // workaround per il bug di Chrome che tronca le letture lunghe (~15s)
+    if (ttsKeepAlive) clearInterval(ttsKeepAlive);
+    ttsKeepAlive = setInterval(() => {
+      if (TTS.speaking && !TTS.paused) { TTS.pause(); TTS.resume(); }
+      else if (!TTS.speaking) { clearInterval(ttsKeepAlive); ttsKeepAlive = null; }
+    }, 10000);
+    TTS.speak(u);
+  } catch (e) { if (onend) onend(); }
+}
+function shutUp() {
+  if (TTS) try { TTS.cancel(); } catch(e){}
+  document.querySelectorAll(".host-bubble.speaking").forEach(b => b.classList.remove("speaking"));
+}
+
+function micAvailable() { return voiceMode && SR && !srBlocked; }
+
+/* Il permesso microfono viene chiesto UNA volta sola, a inizio partita:
+   lo stream resta aperto per tutta la sessione così i successivi avvii del
+   riconoscimento non fanno più comparire la richiesta del browser. */
+let micStream = null;
+async function warmUpMic() {
+  if (!SR || srBlocked || micStream) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({audio: true});
+  } catch (e) {
+    srBlocked = true;
+  }
+}
+function releaseMic() {
+  if (micStream) { try { micStream.getTracks().forEach(t => t.stop()); } catch(e){} micStream = null; }
+}
+
+/* ANTI-ECO: il microfono non deve MAI essere acceso mentre il presentatore
+   parla, altrimenti la sua voce viene trascritta come risposta e il gioco
+   entra in loop con se stesso. Regole:
+   1. il motore di riconoscimento viene SPENTO a ogni intervento vocale;
+   2. si riaccende DA ZERO (buffer pulito) solo a lettura finita, dopo una
+      pausa di sicurezza che lascia svanire coda audio ed eco;
+   3. grazie allo stream microfono tenuto aperto (warmUpMic) questi riavvii
+      non fanno ricomparire la richiesta di permesso del browser. */
+const ECHO_GUARD_MS = 500;
+let recAccept = false;
+
+function whenQuiet(cb) {
+  // esegue cb solo quando la sintesi vocale ha finito di parlare (+ guardia)
+  if (!voiceMode || !TTS) { cb(); return; }
+  let done = false;
+  const fire = () => { if (!done) { done = true; cb(); } };
+  const check = () => {
+    if (done) return;
+    if (!TTS.speaking) setTimeout(fire, ECHO_GUARD_MS);
+    else setTimeout(check, 150);
+  };
+  check();
+  setTimeout(fire, 26000); // rete di sicurezza
+}
+
+function updateMicUI() {
+  const on = recAccept && !!recog;
+  $("btn-mic").classList.toggle("listening", on);
+  $("answer-input").placeholder = on ? "🎤 Vi ascolto… parlate!" : "Scrivi la risposta e premi Invio…";
+}
+function killEngine() {
+  if (recog) { try { recog.onend = null; recog.onresult = null; recog.onerror = null; recog.abort(); } catch(e){} recog = null; }
+}
+function startListening() {
+  if (!micAvailable() || G.paused || G.busy) return;
+  if (G.phase !== "playing" && G.phase !== "steal") return;
+  if (isStarTurn() || (G.phase === "steal" && G.mode === "duello" && G.guesserIdx === 1)) return; // turno della Stella
+  if (TTS && TTS.speaking) { whenQuiet(() => startListening()); return; } // mai col presentatore che parla
+  killEngine(); // riavvio pulito: il buffer non può contenere la voce del conduttore
+  recAccept = true;
+  const r = new SR();
+  recog = r;
+  r.lang = "it-IT";
+  r.continuous = true;
+  r.interimResults = true;
+  r.maxAlternatives = 3;
+  r.onresult = e => {
+    if (!recAccept) return;
+    let finalText = "", interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalText += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    const shown = (finalText || interim).trim();
+    if (shown) $("answer-input").value = shown;
+    if (finalText.trim()) { recAccept = false; updateMicUI(); submitAnswer(); }
+  };
+  r.onerror = e => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      srBlocked = true; recAccept = false;
+      killEngine();
+      updateMicUI();
+      hostSay("Il microfono qui non me lo fanno usare (permessi del browser)… nessun dramma: scrivete le risposte con la tastiera, alla voce ci penso io!", "deadpan", false);
+    }
+  };
+  r.onend = () => {
+    recog = null;
+    // il browser chiude il riconoscimento dopo lunghi silenzi: si riapre da solo
+    if (recAccept && (G.phase === "playing" || G.phase === "steal") && !G.paused && micAvailable()) {
+      setTimeout(() => { if (recAccept && !recog) startListening(); }, 350);
+    }
+    updateMicUI();
+  };
+  try { r.start(); } catch (e) { recog = null; }
+  updateMicUI();
+}
+function stopRecognition() { // spegnimento vero: mentre il presentatore parla, a fine round, in pausa
+  recAccept = false;
+  killEngine();
+  updateMicUI();
+}
+
+/* ---------------- NORMALIZZAZIONE E MATCHING RISPOSTE ---------------- */
+function norm(s) {
+  return String(s||"").toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/[^a-z0-9\s]/g," ")
+    .replace(/\b(il|lo|la|i|gli|le|un|uno|una|l|di|da|del|della|dei|delle|al|alla|ai|alle)\b/g," ")
+    .replace(/\s+/g," ").trim();
+}
+function lev(a, b) {
+  const m = a.length, n = b.length;
+  if (!m) return n; if (!n) return m;
+  let prev = Array.from({length:n+1}, (_,i)=>i);
+  for (let i=1;i<=m;i++){
+    const cur = [i];
+    for (let j=1;j<=n;j++){
+      cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+function isMatch(guess, target, aliases) {
+  const g = norm(guess);
+  if (!g) return false;
+  const cands = [target].concat(aliases||[]).map(norm).filter(Boolean);
+  for (const c of cands) {
+    if (g === c) return true;
+    if (c.length >= 4 && g.length >= 4 && (g.includes(c) || c.includes(g))) return true;
+    const tol = c.length > 5 ? 2 : (c.length >= 4 ? 1 : 0);
+    if (tol && lev(g, c) <= tol) return true;
+    // confronto parola per parola (es. "leonardo" vs "leonardo da vinci")
+    const gw = g.split(" "), cw = c.split(" ");
+    if (cw.some(w => w.length >= 4 && gw.some(x => x === w || (w.length>5 && lev(x,w)<=1)))) return true;
+  }
+  return false;
+}
+
+/* ---------------- GENERAZIONE DOMANDE (API + fallback) ---------------- */
+function buildFallbackSet(n) {
+  const s = FALLBACK_SURVEYS.slice(), c = FALLBACK_RANKINGS.slice(), t = FALLBACK_TRIVIA.slice();
+  shuffle(s); shuffle(c); shuffle(t);
+  const pools = [s, c, t]; // sondaggio, classifica, trivia a rotazione
+  const out = [];
+  let k = 0;
+  while (out.length < n) {
+    const p = pools[k % 3]; k++;
+    if (p.length) { out.push(p.pop()); continue; }
+    const any = pools.find(x => x.length);
+    if (!any) break;
+    out.push(any.pop());
+  }
+  shuffle(out);
+  return out;
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function validQuestion(q) {
+  if (!q || typeof q !== "object") return false;
+  if (q.type === "trivia") {
+    return typeof q.question === "string" && q.question.length > 4 &&
+           typeof q.answer === "string" && q.answer.length > 0;
+  }
+  if (q.type === "sondaggio" || q.type === "classifica") {
+    if (typeof q.question !== "string" || q.question.length < 5) return false;
+    if (!Array.isArray(q.answers) || q.answers.length < 3) return false;
+    return q.answers.every(a => a && typeof a.text === "string" && a.text.length > 0 && typeof a.points === "number");
+  }
+  return false;
+}
+function sanitizeQuestion(q) {
+  if (q.type === "trivia") {
+    return {type:"trivia", question:q.question.trim(), answer:q.answer.trim(),
+            aliases:Array.isArray(q.aliases)?q.aliases.filter(x=>typeof x==="string"):[]};
+  }
+  const answers = q.answers.slice(0,5).map(a => ({
+    text:a.text.trim(), points:Math.max(5, Math.round(a.points)),
+    aliases:Array.isArray(a.aliases)?a.aliases.filter(x=>typeof x==="string"):[]
+  }));
+  answers.sort((a,b)=>b.points-a.points);
+  return {type:q.type, question:q.question.trim(), answers};
+}
+// i tabelloni (sondaggio e classifica) condividono le stesse meccaniche
+const isBoardQ = q => q.type !== "trivia";
+
+async function generateQuestions(n) {
+  const prompt =
+`Genera esattamente ${n} domande in ITALIANO per un party game a squadre stile "Family Feud".
+Rispondi SOLO con un array JSON valido. Nessun testo prima o dopo, nessun backtick, nessun commento.
+
+Mescola in ordine casuale tre tipi di oggetto:
+
+1) Sondaggio stile Family Feud (circa il 40%):
+{"type":"sondaggio","question":"Nomina ...","answers":[{"text":"risposta più popolare","points":100,"aliases":["sinonimi"]},{"text":"...","points":80,"aliases":[]},{"text":"...","points":60,"aliases":[]},{"text":"...","points":40,"aliases":[]},{"text":"...","points":20,"aliases":[]}]}
+
+2) Classifica di cultura generale (circa il 30%): una top 5 OGGETTIVA basata su fatti reali, es. "Le 5 città più popolose del mondo", "I 5 paesi più estesi", "Gli 5 animali più veloci", "I 5 film con maggiori incassi di sempre":
+{"type":"classifica","question":"Le 5 ...","answers":[{"text":"prima in classifica","points":100,"aliases":[]},{"text":"seconda","points":80,"aliases":[]},{"text":"terza","points":60,"aliases":[]},{"text":"quarta","points":40,"aliases":[]},{"text":"quinta","points":20,"aliases":[]}]}
+
+3) Trivia classica a risposta secca (circa il 30%):
+{"type":"trivia","question":"...domanda di cultura generale, difficoltà media...","answer":"risposta corretta","aliases":["varianti accettabili della risposta"]}
+
+Regole per i sondaggi: esattamente 5 risposte con punti 100, 80, 60, 40, 20 in quest'ordine; domande sulla vita quotidiana, divertenti, con risposte brevi (1-3 parole) che una persona comune darebbe davvero, ordinate dalla più popolare alla meno popolare.
+Regole per le classifiche: dati reali e verificabili, ordine corretto dal primo al quinto posto, punti 100, 80, 60, 40, 20; argomenti vari (geografia, sport, cinema, musica, scienza, storia).
+Regole per le trivia: cultura generale varia, risposta secca e non ambigua.
+Per ogni risposta includi negli "aliases" sinonimi e modi alternativi molto comuni di dirla (anche in altre lingue se noti, es. "New York"/"Nuova York"). Varia molto gli argomenti tra le domande.`;
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 25000);
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model: API_MODEL,
+        max_tokens: 3000,
+        messages: [{role:"user", content: prompt}]
+      }),
+      signal: ctrl.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    let text = (data && data.content && data.content[0] && data.content[0].text) || "";
+    // pulizia di eventuali recinzioni ```json ... ```
+    text = text.replace(/```json/gi,"").replace(/```/g,"").trim();
+    const start = text.indexOf("["), end = text.lastIndexOf("]");
+    if (start === -1 || end === -1) throw new Error("JSON non trovato");
+    const arr = JSON.parse(text.slice(start, end+1));
+    if (!Array.isArray(arr)) throw new Error("non è un array");
+    const good = arr.filter(validQuestion).map(sanitizeQuestion);
+    if (good.length === 0) throw new Error("nessuna domanda valida");
+    // se ne mancano, completa col fallback
+    while (good.length < n) {
+      const extra = buildFallbackSet(1)[0];
+      if (!good.some(q => norm(q.question) === norm(extra.question))) good.push(extra);
+    }
+    return {questions: good.slice(0, n), source: "api"};
+  } catch (e) {
+    clearTimeout(timer);
+    return {questions: buildFallbackSet(n), source: "fallback"};
+  }
+}
+
+/* ---------------- STATO DI GIOCO ---------------- */
+const G = {
+  teams: [{name:"Squadra 1", score:0},{name:"Squadra 2", score:0}],
+  rounds: [],
+  roundIdx: 0,
+  totalRounds: 5,
+  activeIdx: 0,       // squadra che controlla il round
+  guesserIdx: 0,      // squadra che sta rispondendo ora (cambia durante la RUBA)
+  stealing: false,
+  strikes: 0,
+  pot: 0,
+  revealed: [],
+  phase: "setup",     // setup | loading | playing | steal | roundend | gameend
+  timerLeft: TURN_SECONDS,
+  timerInt: null,
+  paused: false,
+  busy: false,
+  mode: "duello",     // pvp | duello | solo
+  diff: "media",
+  totalAvailable: 0   // punti massimi teoricamente conquistabili (per il percentile)
+};
+
+/* La Stella (CPU): probabilità di successo per difficoltà */
+const STAR_AI = {
+  facile:   {board:0.45, trivia:0.35, steal:0.40},
+  media:    {board:0.60, trivia:0.55, steal:0.55},
+  cattiva:  {board:0.78, trivia:0.72, steal:0.70}
+};
+const STAR_NAME = "La Stella";
+function isStarTurn() { return G.mode === "duello" && G.guesserIdx === 1; }
+
+/* attesa della CPU che rispetta la pausa */
+function cpuWait(ms, cb) {
+  const iv = setInterval(() => {
+    if (G.phase !== "playing" && G.phase !== "steal") { clearInterval(iv); return; }
+    if (!G.paused) {
+      ms -= 200;
+      if (ms <= 0) { clearInterval(iv); cb(); }
+    }
+  }, 200);
+}
+/* la Stella preferisce le risposte basse del tabellone (come un giocatore vero) */
+function starPickAnswer(q) {
+  const cand = [];
+  q.answers.forEach((a, i) => { if (!G.revealed[i]) for (let k = 0; k <= i; k++) cand.push(i); });
+  return cand[Math.floor(Math.random() * cand.length)];
+}
+function setStarFace(mood) {
+  const img = $("star-face");
+  if (!img || img.style.display === "none" || !img.src) return;
+  if (STAR_FACES[mood]) img.src = STAR_FACES[mood];
+}
+
+/* ---------------- RIFERIMENTI DOM ---------------- */
+const $ = id => document.getElementById(id);
+const screens = {setup:$("screen-setup"), loading:$("screen-loading"), game:$("screen-game"), end:$("screen-end")};
+function showScreen(name){ for (const k in screens) screens[k].classList.toggle("active", k===name); }
+
+function hostSay(text, mood, speakIt) {
+  $("bubble-game").textContent = text;
+  if (mood) setFace(mood);
+  if (speakIt !== false) speak(text);
+}
+
+/* ---------------- TIMER ---------------- */
+function timerRender() {
+  const t = $("timer"), n = $("timer-num");
+  n.textContent = G.timerLeft;
+  const frac = Math.max(0, G.timerLeft / TURN_SECONDS) * 100;
+  const color = G.timerLeft <= 5 ? "var(--rosso)" : "var(--turchese)";
+  t.style.background = `conic-gradient(${color} ${frac}%, var(--viola-scuro) 0)`;
+  t.classList.toggle("warn", G.timerLeft <= 5);
+}
+function timerStart() {
+  timerStop();
+  G.timerLeft = TURN_SECONDS;
+  timerRender();
+  G.timerInt = setInterval(() => {
+    if (G.paused) return;
+    G.timerLeft--;
+    timerRender();
+    if (G.timerLeft <= 0) { timerStop(); onTimeout(); }
+  }, 1000);
+}
+function timerStop() { if (G.timerInt) { clearInterval(G.timerInt); G.timerInt = null; } }
+
+function setPaused(p) {
+  G.paused = p;
+  $("paused-overlay").classList.toggle("show", p);
+  $("answer-input").disabled = p || G.busy || G.phase === "roundend";
+  if (p) { stopRecognition(); shutUp(); }
+  else if (G.phase === "playing" || G.phase === "steal") { startListening(); $("answer-input").focus(); }
+}
+$("btn-pause").addEventListener("click", () => { if (G.phase==="playing"||G.phase==="steal") setPaused(true); });
+$("btn-resume").addEventListener("click", () => setPaused(false));
+
+/* ---------------- RENDER ---------------- */
+function renderScores() {
+  for (let i=0;i<2;i++) {
+    const el = $("team"+i);
+    el.querySelector(".tname").textContent = G.teams[i].name;
+    el.querySelector(".tscore").textContent = G.teams[i].score;
+    el.classList.toggle("active-team", i === G.guesserIdx && (G.phase==="playing"||G.phase==="steal"));
+  }
+  $("team1").style.display = G.mode === "solo" ? "none" : "";
+  const sf = $("star-face");
+  if (sf) {
+    const showStar = G.mode === "duello" && STAR_FACES.smug;
+    sf.style.display = showStar ? "block" : "none";
+    if (showStar && !sf.src) sf.src = STAR_FACES.smug;
+  }
+}
+function renderStrikes() {
+  const kids = $("strikes").children;
+  for (let i=0;i<3;i++) kids[i].classList.toggle("on", i < G.strikes);
+}
+function renderPot() {
+  const q = G.rounds[G.roundIdx];
+  if (isBoardQ(q)) $("pot").textContent = "MONTEPREMI: " + G.pot;
+  else $("pot").textContent = "IN PALIO: " + TRIVIA_POINTS;
+}
+function renderBoard(revealAll) {
+  const q = G.rounds[G.roundIdx];
+  const board = $("board");
+  board.innerHTML = "";
+  if (isBoardQ(q)) {
+    q.answers.forEach((a, i) => {
+      const div = document.createElement("div");
+      const isRevealed = G.revealed[i];
+      div.className = "slot" + (isRevealed ? " revealed" : (revealAll ? " missed" : ""));
+      if (isRevealed || revealAll) {
+        div.innerHTML = `<span class="num">${i+1}</span><span class="txt">${escapeHtml(a.text)}</span><span class="pts">${a.points}</span>`;
+      } else {
+        div.innerHTML = `<span class="num">${i+1}</span><span class="txt">•••••••••</span><span class="pts">??</span>`;
+      }
+      board.appendChild(div);
+    });
+  } else {
+    const div = document.createElement("div");
+    div.className = "slot" + (revealAll ? (G.revealed[0] ? " revealed" : " missed") : (G.revealed[0] ? " revealed" : ""));
+    if (G.revealed[0] || revealAll) {
+      div.innerHTML = `<span class="num">✓</span><span class="txt">${escapeHtml(q.answer)}</span><span class="pts">${TRIVIA_POINTS}</span>`;
+    } else {
+      div.innerHTML = `<span class="num">?</span><span class="txt">Risposta nascosta…</span><span class="pts">${TRIVIA_POINTS}</span>`;
+    }
+    board.appendChild(div);
+  }
+}
+function escapeHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+function bigStrike() {
+  const el = $("big-strike");
+  el.style.display = "flex";
+  el.querySelector("span").style.animation = "none";
+  void el.offsetWidth;
+  el.querySelector("span").style.animation = "";
+  setTimeout(() => { el.style.display = "none"; }, 750);
+}
+
+/* ---------------- FLUSSO DI GIOCO ---------------- */
+async function startGame() {
+  const n1 = $("name1").value.trim() || (G.mode === "pvp" ? "Squadra 1" : "Campione");
+  const n2 = G.mode === "pvp" ? ($("name2").value.trim() || "Squadra 2")
+           : G.mode === "duello" ? STAR_NAME : "—";
+  G.teams = [{name:n1, score:0},{name:n2, score:0}];
+  G.diff = $("difficulty").value || "media";
+  G.totalAvailable = 0;
+  G.totalRounds = parseInt($("nrounds").value, 10) || 5;
+  voiceMode = $("voice-toggle").checked && !!(TTS || SR);
+  G.roundIdx = 0;
+  G.phase = "loading";
+  setFace("neutral");
+  showScreen("loading");
+  $("load-note").textContent = "Generazione domande in corso…";
+  // permesso microfono chiesto UNA volta qui, poi mai più per tutta la partita
+  if (voiceMode) await warmUpMic();
+  else releaseMic();
+
+  const {questions, source} = await generateQuestions(G.totalRounds);
+  G.rounds = questions;
+  if (source === "fallback") {
+    $("bubble-loading").textContent = "La regia ha avuto un intoppo con le domande nuove… nessun problema: ho sempre il mio quaderno di riserva. LO SHOW DEVE CONTINUARE!";
+    await sleep(1800);
+  }
+  startRound();
+}
+
+function startRound() {
+  const q = G.rounds[G.roundIdx];
+  G.activeIdx = G.mode === "solo" ? 0 : G.roundIdx % 2;
+  G.guesserIdx = G.activeIdx;
+  G.totalAvailable += isBoardQ(q) ? q.answers.reduce((s,a)=>s+a.points,0) : TRIVIA_POINTS;
+  G.stealing = false;
+  G.strikes = 0;
+  G.pot = 0;
+  G.busy = false;
+  G.revealed = isBoardQ(q) ? q.answers.map(()=>false) : [false];
+  G.phase = "playing";
+
+  showScreen("game");
+  $("round-label").textContent = `ROUND ${G.roundIdx+1} / ${G.totalRounds}`;
+  $("qtype").className = "qtype " + q.type;
+  $("qtype").textContent = q.type.toUpperCase();
+  $("question-text").textContent =
+    q.type === "sondaggio" ? "Il nostro sondaggio ha rivelato le risposte più popolari a: “" + q.question + "”" :
+    q.type === "classifica" ? "Cultura generale! Sul tabellone: “" + q.question + "”" :
+    q.question;
+  $("steal-banner").classList.remove("steal");
+  $("steal-banner").style.display = "none";
+  $("next-row").style.display = "none";
+  $("answer-row").style.display = "flex";
+  $("answer-input").value = "";
+  $("answer-input").disabled = false;
+  $("btn-answer").disabled = false;
+
+  renderScores(); renderStrikes(); renderPot(); renderBoard(false);
+
+  $("btn-mic").style.display = (voiceMode && SR) ? "" : "none";
+
+  const team = G.teams[G.activeIdx].name;
+  let intro =
+    q.type === "sondaggio" ? say("roundIntroSurvey", {team}) :
+    q.type === "classifica" ? say("roundIntroRanking", {team}) :
+    say("roundIntroTrivia", {team, points:TRIVIA_POINTS});
+  if (isStarTurn()) intro = say("starTurn");
+  hostSay(intro, q.type === "trivia" ? "neutral" : "happy", false);
+
+  // in modalità vocale il presentatore legge intro + domanda, poi parte il timer e si apre il microfono
+  const kickoff = () => whenQuiet(() => {
+    if (G.phase !== "playing") return;
+    if (isStarTurn()) { cpuPlayTurn(); return; }
+    timerStart();
+    startListening();
+    $("answer-input").focus();
+  });
+  if (isStarTurn()) {
+    // turno della Stella: niente input umano
+    G.busy = true;
+    $("answer-input").disabled = true;
+    $("btn-answer").disabled = true;
+    $("timer-num").textContent = "⭐";
+    $("timer").style.background = "conic-gradient(var(--giallo) 100%, var(--viola-scuro) 0)";
+    setStarFace("smug");
+  }
+  if (voiceMode && TTS) speak(intro + " … " + $("question-text").textContent, kickoff);
+  else kickoff();
+}
+
+/* ---------------- MOTORE DELLA STELLA (CPU) ---------------- */
+function cpuPlayTurn() {
+  if (G.phase !== "playing" || !isStarTurn()) return;
+  const q = G.rounds[G.roundIdx];
+  const ai = STAR_AI[G.diff] || STAR_AI.media;
+  cpuWait(1600 + Math.random() * 1800, () => {
+    if (G.phase !== "playing" || !isStarTurn()) return;
+    const p = isBoardQ(q) ? ai.board : ai.trivia;
+    if (Math.random() < p) {
+      // la Stella indovina
+      if (isBoardQ(q)) {
+        const hit = starPickAnswer(q);
+        G.revealed[hit] = true;
+        G.pot += q.answers[hit].points;
+        G.strikes = 0;
+        renderBoard(false); renderPot(); renderStrikes();
+        setStarFace("happy");
+        hostSay(say("starGood"), "deadpan");
+        if (G.revealed.every(Boolean)) {
+          setTimeout(() => endRound("cleared"), 1100);
+        } else {
+          whenQuietThen(() => cpuPlayTurn());
+        }
+      } else {
+        G.revealed[0] = true;
+        renderBoard(false);
+        setStarFace("happy");
+        G.teams[1].score += TRIVIA_POINTS;
+        renderScores();
+        hostSay(say("starGood"), "deadpan");
+        setTimeout(() => endRound("trivia-win"), 1400);
+      }
+    } else {
+      // la Stella sbaglia
+      bigStrike();
+      setStarFace("sad");
+      const next = G.strikes + 1;
+      hostSay(say(next >= 3 ? "strike3" : "starBad"), next >= 3 ? "happy" : "neutral");
+      G.strikes++;
+      renderStrikes();
+      if (G.strikes >= 3) {
+        setTimeout(startSteal, 1400); // la ruba passa a TE
+      } else {
+        whenQuietThen(() => cpuPlayTurn());
+      }
+    }
+  });
+}
+function whenQuietThen(cb) { whenQuiet(() => { if (G.phase === "playing") cb(); }); }
+
+function cpuStealAttempt() {
+  // la Stella prova a rubare il TUO round
+  const q = G.rounds[G.roundIdx];
+  const ai = STAR_AI[G.diff] || STAR_AI.media;
+  G.busy = true;
+  $("answer-input").disabled = true;
+  $("btn-answer").disabled = true;
+  $("timer-num").textContent = "⭐";
+  setStarFace("smug");
+  cpuWait(2200 + Math.random() * 1600, () => {
+    if (G.phase !== "steal") return;
+    const ok = Math.random() < ai.steal;
+    if (ok && isBoardQ(q)) {
+      const hit = starPickAnswer(q);
+      G.revealed[hit] = true;
+      G.pot += q.answers[hit].points;
+      renderBoard(false);
+    }
+    if (ok) { if (isBoardQ(q)) {} else G.revealed[0] = true; }
+    setStarFace(ok ? "happy" : "sad");
+    resolveSteal(ok);
+  });
+}
+
+function onTimeout() {
+  stopRecognition();
+  if (G.phase === "steal") {
+    hostSay(say("timeout"), "deadpan");
+    setTimeout(() => resolveSteal(false), 900);
+  } else if (G.phase === "playing") {
+    hostSay(say("timeout"), "deadpan");
+    addStrike();
+  }
+}
+
+function submitAnswer() {
+  if (G.busy || G.paused) return;
+  if (G.phase !== "playing" && G.phase !== "steal") return;
+  const guess = $("answer-input").value.trim();
+  if (!guess) return;
+  stopRecognition(); // mic spento: il commento del presentatore non deve essere trascritto
+  shutUp();
+  $("answer-input").value = "";
+  timerStop();
+  G.busy = true;
+  $("answer-input").disabled = true;
+  $("btn-answer").disabled = true;
+
+  const q = G.rounds[G.roundIdx];
+  if (isBoardQ(q)) {
+    let hit = -1;
+    for (let i=0;i<q.answers.length;i++) {
+      if (!G.revealed[i] && isMatch(guess, q.answers[i].text, q.answers[i].aliases)) { hit = i; break; }
+    }
+    if (G.phase === "steal") {
+      if (hit >= 0) { G.revealed[hit] = true; G.pot += q.answers[hit].points; renderBoard(false); }
+      setTimeout(() => resolveSteal(hit >= 0), hit >= 0 ? 900 : 400);
+      return;
+    }
+    if (hit >= 0) {
+      G.revealed[hit] = true;
+      G.pot += q.answers[hit].points;
+      G.strikes = 0; // le X contano solo se "di fila"
+      renderBoard(false); renderPot(); renderStrikes();
+      if (hit === 0) hostSay(say("topAnswer"), "happy");
+      else if (q.answers[hit].points <= 20) hostSay(say("lowAnswer"), "happy");
+      else hostSay(say("goodAnswer"), "happy");
+      if (G.revealed.every(Boolean)) {
+        setTimeout(() => endRound("cleared"), 1100);
+      } else {
+        resumeInput();
+      }
+    } else {
+      wrongAnswer();
+    }
+  } else { // trivia
+    const ok = isMatch(guess, q.answer, q.aliases);
+    if (G.phase === "steal") {
+      if (ok) G.revealed[0] = true;
+      setTimeout(() => resolveSteal(ok), 400);
+      return;
+    }
+    if (ok) {
+      G.revealed[0] = true;
+      renderBoard(false);
+      hostSay(say("triviaCorrect", {points:TRIVIA_POINTS}), "happy");
+      G.teams[G.guesserIdx].score += TRIVIA_POINTS;
+      renderScores();
+      setTimeout(() => endRound("trivia-win"), 1100);
+    } else {
+      wrongAnswer();
+    }
+  }
+}
+
+function wrongAnswer() {
+  bigStrike();
+  const q = G.rounds[G.roundIdx];
+  const next = G.strikes + 1;
+  if (next >= 3) hostSay(say("strike3"), "shocked");
+  else if (q.type === "trivia") hostSay(say("triviaStrike"), "deadpan");
+  else hostSay(say(next === 1 ? "strike1" : "strike2"), "deadpan");
+  addStrike();
+}
+
+function addStrike() {
+  G.strikes++;
+  renderStrikes();
+  if (G.strikes >= 3) {
+    if (G.mode === "solo") setTimeout(() => endRound("solo-out"), 1300);
+    else setTimeout(startSteal, 1300);
+  } else {
+    resumeInput(800);
+  }
+}
+
+function resumeInput(delay) {
+  setTimeout(() => {
+    if (G.phase !== "playing" && G.phase !== "steal") return;
+    G.busy = false;
+    $("answer-input").disabled = G.paused;
+    $("btn-answer").disabled = false;
+    // timer e microfono ripartono solo quando il presentatore ha finito di parlare
+    whenQuiet(() => {
+      if (G.phase !== "playing" && G.phase !== "steal") return;
+      timerStart();
+      startListening();
+      $("answer-input").focus();
+    });
+  }, delay || 700);
+}
+
+function startSteal() {
+  G.phase = "steal";
+  G.stealing = true;
+  G.guesserIdx = 1 - G.activeIdx;
+  const banner = $("steal-banner");
+  banner.style.display = "block";
+  banner.classList.add("steal");
+  renderScores();
+  const line = say("stealPrompt", {team:G.teams[G.guesserIdx].name});
+  hostSay(line, "shocked", false);
+  // se a rubare è la Stella (CPU), niente input umano
+  if (G.mode === "duello" && G.guesserIdx === 1) {
+    if (voiceMode && TTS) speak(line, () => whenQuiet(() => { if (G.phase === "steal") cpuStealAttempt(); }));
+    else cpuStealAttempt();
+    return;
+  }
+  G.busy = false;
+  $("answer-input").disabled = false;
+  $("btn-answer").disabled = false;
+  const kickoff = () => whenQuiet(() => {
+    if (G.phase !== "steal") return;
+    timerStart();
+    startListening();
+    $("answer-input").focus();
+  });
+  if (voiceMode && TTS) speak(line, kickoff);
+  else kickoff();
+}
+
+function resolveSteal(success) {
+  timerStop();
+  const q = G.rounds[G.roundIdx];
+  const stealer = G.teams[G.guesserIdx], owner = G.teams[G.activeIdx];
+  if (isBoardQ(q)) {
+    if (success) {
+      stealer.score += G.pot;
+      hostSay(say("stealSuccess", {team:stealer.name}), "shocked");
+    } else {
+      owner.score += G.pot;
+      if (G.pot > 0) hostSay(say("stealFail", {team:owner.name}), "happy");
+      else hostSay(say("roundEndZero"), "deadpan");
+    }
+  } else {
+    if (success) {
+      stealer.score += TRIVIA_POINTS;
+      hostSay(say("stealSuccess", {team:stealer.name}), "shocked");
+    } else {
+      hostSay(say("roundEndZero"), "deadpan");
+    }
+  }
+  renderScores();
+  setTimeout(() => endRound("steal-done"), 1500);
+}
+
+function endRound(reason) {
+  timerStop();
+  stopRecognition();
+  G.phase = "roundend";
+  const q = G.rounds[G.roundIdx];
+  $("steal-banner").style.display = "none";
+
+  if (reason === "cleared") {
+    G.teams[G.activeIdx].score += G.pot;
+    renderScores();
+    hostSay(say("boardCleared", {team:G.teams[G.activeIdx].name}) + " " +
+            say("roundEndBank", {team:G.teams[G.activeIdx].name, points:G.pot}), "happy");
+  } else if (reason === "solo-out") {
+    hostSay(say("soloOut"), "deadpan");
+  }
+
+  renderBoard(true); // mostra tutte le risposte, anche quelle mancate
+  $("answer-row").style.display = "none";
+  $("next-row").style.display = "flex";
+  const last = G.roundIdx >= G.totalRounds - 1;
+  $("btn-next").textContent = last ? "VEDI IL VERDETTO 🏆" : "PROSSIMO ROUND ➜";
+  $("btn-next").focus();
+}
+
+function nextRound() {
+  G.roundIdx++;
+  if (G.roundIdx >= G.totalRounds) endGame();
+  else startRound();
+}
+
+function endGame() {
+  G.phase = "gameend";
+  showScreen("end");
+  const [a, b] = G.teams;
+  // "Centro Studi Baffologici": percentile di conoscenza, approssimato ma monotono e onesto
+  const pctOf = t => {
+    const r = Math.max(0, Math.min(1, t.score / Math.max(1, G.totalAvailable)));
+    return Math.max(2, Math.min(98, Math.round(100 * Math.pow(r, 0.65) * 0.92 + 4)));
+  };
+  const know = $("knowledge");
+
+  for (let i=0;i<2;i++) {
+    $("fteam"+i).querySelector(".tname").textContent = G.teams[i].name;
+    $("fteam"+i).querySelector(".tscore").textContent = G.teams[i].score;
+  }
+  $("fteam1").style.display = G.mode === "solo" ? "none" : "";
+
+  if (G.mode === "solo") {
+    const r = a.score / Math.max(1, G.totalAvailable);
+    const medal = r >= 0.7 ? "🥇 MEDAGLIA D'ORO!" : r >= 0.45 ? "🥈 MEDAGLIA D'ARGENTO!" :
+                  r >= 0.25 ? "🥉 MEDAGLIA DI BRONZO!" : "🎗️ DIPLOMA DI PARTECIPAZIONE";
+    $("winner-text").textContent = medal;
+    $("bubble-end").textContent = say("soloEnd", {team:a.name, points:a.score});
+    know.innerHTML = "🧠 Verdetto del <b>Centro Studi Baffologici</b> (stime spannometriche, ma con un fondo di verità): hai dimostrato più conoscenza di circa il <b>" + pctOf(a) + "%</b> dei concorrenti che passano da questo studio.";
+    setFace(r >= 0.45 ? "happy" : "deadpan");
+  } else {
+    if (a.score === b.score) {
+      $("winner-text").textContent = "PAREGGIO! " + a.score + " pari!";
+      $("bubble-end").textContent = say("gameTie");
+      setFace("shocked");
+    } else {
+      const w = a.score > b.score ? a : b;
+      $("winner-text").textContent = "🏆 VINCE " + w.name.toUpperCase() + "! 🏆";
+      $("bubble-end").textContent = say("gameWin", {team:w.name, points:w.score});
+      setFace("happy");
+    }
+    if (G.mode === "duello") {
+      know.innerHTML = "🧠 <b>Centro Studi Baffologici</b>: " + escapeHtml(a.name) + " ha dimostrato più conoscenza di circa il <b>" + pctOf(a) + "%</b> dei concorrenti. La Stella? Meglio del <b>" + pctOf(b) + "%</b>… ma è una stella, non fa testo.";
+    } else {
+      know.innerHTML = "🧠 <b>Centro Studi Baffologici</b> (stime spannometriche, ma con un fondo di verità): " +
+        escapeHtml(a.name) + " meglio del <b>" + pctOf(a) + "%</b> della popolazione · " +
+        escapeHtml(b.name) + " meglio del <b>" + pctOf(b) + "%</b>.";
+    }
+  }
+  speak($("bubble-end").textContent);
+}
+
+function resetGame() {
+  G.teams.forEach(t => t.score = 0);
+  G.phase = "setup";
+  stopRecognition();
+  shutUp();
+  setFace("neutral");
+  showScreen("setup");
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+/* ---------------- EVENTI ---------------- */
+$("btn-start").addEventListener("click", startGame);
+$("btn-answer").addEventListener("click", submitAnswer);
+$("answer-input").addEventListener("keydown", e => { if (e.key === "Enter") submitAnswer(); });
+$("btn-next").addEventListener("click", nextRound);
+$("btn-again").addEventListener("click", resetGame);
+["name1","name2"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key==="Enter") startGame(); }));
+
+/* selettore modalità */
+function updateModeRows() {
+  $("row-diff").style.display = G.mode === "duello" ? "" : "none";
+  $("row-name2").style.display = G.mode === "pvp" ? "" : "none";
+  $("label-name1").textContent = G.mode === "pvp" ? "Nome Squadra 1" : "Il tuo nome";
+  if (G.mode !== "pvp" && $("name1").value.trim() === "Squadra 1") $("name1").value = "";
+  document.querySelectorAll(".mode-card").forEach(c => c.classList.toggle("selected", c.dataset.mode === G.mode));
+}
+document.querySelectorAll(".mode-card").forEach(c => {
+  c.addEventListener("click", () => { G.mode = c.dataset.mode; updateModeRows(); });
+});
+updateModeRows();
+$("btn-mic").addEventListener("click", () => {
+  if (recAccept) stopRecognition();
+  else startListening();
+});
+$("btn-reread").addEventListener("click", () => {
+  if (G.phase !== "playing" && G.phase !== "steal") return;
+  if (!TTS) return;
+  const wasMicOpen = recAccept;
+  stopRecognition(); // mic spento durante la rilettura, per non trascrivere il presentatore
+  const wasVoice = voiceMode;
+  voiceMode = true; // il pulsante funziona anche se la modalità vocale è spenta
+  speak($("question-text").textContent, () => {
+    voiceMode = wasVoice;
+    if (wasMicOpen) whenQuiet(() => startListening());
+  });
+});
+$("btn-test-audio").addEventListener("click", () => {
+  const note = $("test-audio-note");
+  if (!TTS) { note.textContent = "Sintesi vocale non supportata da questo browser."; return; }
+  note.textContent = "Se non mi sentite, alzate il volume!";
+  try {
+    TTS.cancel();
+    const u = new SpeechSynthesisUtterance("Prova, prova… uno, due, tre! Se mi sentite forte e chiaro, siamo pronti ad andare in onda!");
+    u.lang = "it-IT"; if (itVoice) u.voice = itVoice;
+    u.rate = 1.06; u.pitch = 1.05; u.volume = 1;
+    u.onend = () => { note.textContent = "✓ Audio funzionante!"; };
+    TTS.speak(u);
+  } catch(e) { note.textContent = "Errore audio: " + e.message; }
+});
+
+/* ---------------- AVVIO ---------------- */
+(function voiceSupportNote(){
+  const note = $("voice-support-note"), toggle = $("voice-toggle");
+  if (!TTS && !SR) {
+    note.textContent = "⚠️ Questo browser non supporta la modalità vocale: si gioca con la tastiera.";
+    toggle.checked = false; toggle.disabled = true;
+  } else if (!SR) {
+    note.textContent = "ℹ️ Qui posso leggere domande e commenti ad alta voce, ma il microfono non è supportato: le risposte si scrivono. Per l'esperienza completa aprite il gioco in Chrome.";
+  } else {
+    note.textContent = "Il permesso per il microfono viene chiesto una sola volta, all'inizio della partita: scegliete \"Consenti\" e non ve lo richiederò più. Se lo negate, si continua con la tastiera senza problemi.";
+  }
+})();
+setFace("happy");
+</script>
+</body>
+</html>
