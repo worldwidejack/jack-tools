@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Benzina — il gioco che scalda</title>
+<style>
+  :root{
+    --nero:#0D0A0F;
+    --nero2:#1A1420;
+    --fuoco:#FF3B3B;
+    --brace:#FF7A2F;
+    --oro:#FFC24B;
+    --viola:#B266FF;
+    --ghiaccio:#6FD8FF;
+    --carta:#F7F2EA;
+    --muted:#8A7F92;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+  html,body{height:100%;}
+  body{
+    background:var(--nero);color:var(--carta);
+    font-family:-apple-system,'Segoe UI',Roboto,sans-serif;overflow:hidden;
+    background-image:radial-gradient(ellipse 130% 55% at 50% 110%, #2A1220 0%, transparent 65%);
+  }
+  #app{height:100dvh;display:flex;flex-direction:column;padding:20px;max-width:520px;margin:0 auto;}
+  .eyebrow{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700;}
+  h1.big{font-size:clamp(42px,13vw,64px);font-weight:900;text-align:center;line-height:.98;letter-spacing:-.02em;text-transform:uppercase;margin-top:8px;}
+  h1.big .f{color:var(--fuoco);}
+  .sub{text-align:center;color:var(--muted);font-size:15px;line-height:1.5;margin-top:12px;}
+  .spacer{flex:1;}
+  .btn{display:block;width:100%;border:none;border-radius:18px;padding:19px;font-size:19px;font-weight:900;cursor:pointer;font-family:inherit;transition:transform .08s;}
+  .btn:active{transform:scale(.96);}
+  .btn-fuoco{background:var(--fuoco);color:#fff;box-shadow:0 6px 0 #A31F1F;}
+  .btn-fuoco:active{box-shadow:0 2px 0 #A31F1F;}
+  .btn-ghost{background:transparent;color:var(--muted);font-weight:600;font-size:15px;padding:14px;}
+  .btn+.btn{margin-top:10px;}
+
+  /* livelli */
+  .lvl{display:flex;gap:10px;margin-top:20px;}
+  .lvl-btn{flex:1;background:var(--nero2);border:2px solid #322838;border-radius:16px;padding:16px 8px;text-align:center;cursor:pointer;transition:transform .08s;}
+  .lvl-btn:active{transform:scale(.95);}
+  .lvl-btn .ico{font-size:26px;}
+  .lvl-btn .nm{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;margin-top:6px;}
+  .lvl-btn .ds{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.3;}
+  .lvl-btn.sel{border-color:var(--fuoco);background:#241018;}
+
+  /* carta */
+  .deck-zone{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:8px 0;}
+  .pcard{
+    width:100%;max-width:360px;border-radius:26px;padding:30px 26px;
+    display:flex;flex-direction:column;justify-content:center;text-align:center;
+    min-height:62%;position:relative;
+    animation:deal .28s cubic-bezier(.2,.8,.3,1);
+  }
+  @keyframes deal{from{opacity:0;transform:translateY(26px) rotate(-2deg);}to{opacity:1;transform:none;}}
+  .ptype{font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:900;margin-bottom:18px;opacity:.85;}
+  .ptext{font-size:clamp(22px,6.4vw,30px);font-weight:800;line-height:1.28;letter-spacing:-.01em;}
+  .ppen{font-size:14px;font-weight:700;margin-top:22px;opacity:.75;line-height:1.5;}
+  .heat-pips{position:absolute;top:18px;right:20px;font-size:13px;letter-spacing:2px;}
+
+  .t-mai{background:linear-gradient(160deg,#1E2A4A,#15203A);border:2px solid #35507F;}
+  .t-mai .ptype{color:var(--ghiaccio);}
+  .t-prob{background:linear-gradient(160deg,#3A1A4A,#2A1238);border:2px solid #6E3AA0;}
+  .t-prob .ptype{color:var(--viola);}
+  .t-vero{background:linear-gradient(160deg,#4A2A10,#38200C);border:2px solid #9A6320;}
+  .t-vero .ptype{color:var(--oro);}
+  .t-obbl{background:linear-gradient(160deg,#4A1418,#380E12);border:2px solid #A03038;}
+  .t-obbl .ptype{color:var(--fuoco);}
+  .t-tutti{background:linear-gradient(160deg,#123A2E,#0C2C22);border:2px solid #2E8A66;}
+  .t-tutti .ptype{color:#4ED9A4;}
+
+  .hud{display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;}
+  .hud .cnt{font-size:13px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .hud .lv{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;}
+
+  .screen{display:none;flex-direction:column;flex:1;min-height:0;animation:pop .2s ease;}
+  .screen.active{display:flex;}
+  @keyframes pop{from{opacity:0;}to{opacity:1;}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <div class="screen active" id="s-home">
+    <div class="spacer"></div>
+    <div class="eyebrow">Vietato offendersi · si gioca in cerchio</div>
+    <h1 class="big">BEN<span class="f">ZINA</span></h1>
+    <p class="sub">Un telefono al centro, una carta alla volta.<br>Chi non risponde o non esegue, beve<br>(o penitenza decisa dal gruppo).</p>
+    <div class="lvl">
+      <div class="lvl-btn sel" id="lvl-1" onclick="setLvl(1)">
+        <div class="ico">🔥</div><div class="nm">Scintilla</div><div class="ds">Rompighiaccio cattivello</div>
+      </div>
+      <div class="lvl-btn" id="lvl-2" onclick="setLvl(2)">
+        <div class="ico">🔥🔥</div><div class="nm">Fiamma</div><div class="ds">Si inizia a sudare</div>
+      </div>
+      <div class="lvl-btn" id="lvl-3" onclick="setLvl(3)">
+        <div class="ico">🔥🔥🔥</div><div class="nm">Incendio</div><div class="ds">Poi non lamentatevi</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn btn-fuoco" onclick="startGame()">ACCENDI</button>
+  </div>
+
+  <!-- GIOCO -->
+  <div class="screen" id="s-game">
+    <div class="hud">
+      <span class="lv" id="hud-lv"></span>
+      <span class="cnt" id="hud-cnt"></span>
+    </div>
+    <div class="deck-zone">
+      <div class="pcard" id="pcard"></div>
+    </div>
+    <button class="btn btn-fuoco" onclick="nextCard()">PROSSIMA</button>
+    <button class="btn btn-ghost" onclick="show('s-home')">Cambia livello</button>
+  </div>
+
+</div>
+
+<script>
+/*
+ Tipi:
+ mai   = "Io non ho mai..." — chi l'ha fatto beve
+ prob  = "Chi è più probabile che..." — al 3 tutti puntano, il più puntato beve
+ vero  = Verità — la persona a cui tocca risponde o beve doppio
+ obbl  = Obbligo — esegue o beve doppio
+ tutti = regola lampo per tutto il gruppo
+*/
+const DECK = {
+1:[
+["mai","Io non ho mai stalkerato il profilo di una persona che mi piaceva fino a foto di 3 anni fa."],
+["mai","Io non ho mai finto di non aver visto un messaggio per giorni."],
+["mai","Io non ho mai mentito sul motivo per cui ho dato buca a qualcuno in questo cerchio."],
+["mai","Io non ho mai riletto una mia chat vecchia solo per il cringe."],
+["mai","Io non ho mai messo like a una foto vecchissima per sbaglio mentre stalkeravo."],
+["mai","Io non ho mai detto 'sto arrivando' mentre ero ancora in doccia."],
+["prob","Chi è più probabile che finisca a ballare sul cubo stasera?"],
+["prob","Chi è più probabile che si addormenti per primo alla festa?"],
+["prob","Chi è più probabile che scriva all'ex dopo due drink?"],
+["prob","Chi è più probabile che diventi famoso per un motivo imbarazzante?"],
+["prob","Chi è più probabile che si perda anche col navigatore acceso?"],
+["prob","Chi è più probabile che pianga guardando una pubblicità?"],
+["vero","Qual è la cosa più imbarazzante nella tua cronologia ricerche di questa settimana?"],
+["vero","Qual è il messaggio più cringe che hai mai mandato? Riassumilo al gruppo."],
+["vero","Chi del gruppo vince in una gara di karaoke e chi la perde malissimo?"],
+["vero","Qual è la bugia che dici più spesso?"],
+["obbl","Fai la tua migliore imitazione di qualcuno del gruppo finché non indovinano chi è."],
+["obbl","Mostra l'ultima foto della tua galleria. Senza scorrere prima."],
+["obbl","Manda un vocale di 10 secondi cantando a una persona a caso della tua rubrica."],
+["obbl","Parla con accento a scelta del gruppo fino al tuo prossimo turno."],
+["tutti","Chi ha il telefono sotto il 30% di batteria beve."],
+["tutti","L'ultimo che tocca il pavimento beve."],
+["tutti","Chi ha più follower del gruppo beve, per invidia collettiva."],
+["tutti","Chi ha mandato un vocale sopra i 2 minuti questa settimana beve."]
+],
+2:[
+["mai","Io non ho mai avuto una cotta per una persona presente in questo cerchio."],
+["mai","Io non ho mai flirtato con qualcuno solo per avere da bere gratis."],
+["mai","Io non ho mai baciato qualcuno di cui non ricordavo il nome."],
+["mai","Io non ho mai mandato un messaggio di cui mi sono pentito appena premuto invio."],
+["mai","Io non ho mai fatto ghosting a qualcuno che poi ho rincontrato dal vivo."],
+["mai","Io non ho mai guardato il telefono di qualcun altro di nascosto."],
+["mai","Io non ho mai usato una scusa inventata per andarmene da un appuntamento."],
+["prob","Chi è più probabile che abbia una chat che non vorrebbe far leggere a nessuno qui?"],
+["prob","Chi è più probabile che si fidanzi per primo con qualcuno conosciuto stasera?"],
+["prob","Chi è più probabile che abbia mentito almeno una volta in questo gioco?"],
+["prob","Chi è più probabile che flirti senza nemmeno accorgersene?"],
+["prob","Chi è più probabile che torni a casa all'alba stanotte?"],
+["vero","Descrivi il tuo tipo ideale. Il gruppo decide chi dei presenti ci va più vicino."],
+["vero","Qual è stato il tuo peggior appuntamento di sempre?"],
+["vero","Cosa scriveresti adesso alla tua ultima cotta se fossi sicuro di non fare figuracce?"],
+["vero","Qual è la cosa più audace che hai fatto per attirare l'attenzione di qualcuno?"],
+["vero","C'è una persona qui che avresti voluto conoscere meglio in un altro contesto? Non fare nomi. O falli."],
+["obbl","Fissa negli occhi la persona alla tua destra per 20 secondi. Vietato ridere: chi ride beve."],
+["obbl","Lascia che il gruppo scriva un messaggio (approvato da te) a un tuo match o contatto a scelta loro."],
+["obbl","Racconta il tuo momento più imbarazzante in assoluto. Il gruppo vota se è abbastanza imbarazzante, altrimenti bevi."],
+["obbl","Fai un complimento sincero e specifico a ognuno dei presenti. Vietato essere generici."],
+["obbl","Balla senza musica per 15 secondi. Il gruppo sceglie lo stile."],
+["tutti","Chi è single beve. Chi è fidanzato beve il doppio, per solidarietà ai single."],
+["tutti","Chi ha ancora foto con un ex nel telefono beve."],
+["tutti","Tutti indicano chi è vestito meglio stasera. Il vincitore fa bere una persona a scelta."]
+],
+3:[
+["mai","Io non ho mai pensato 'quasi quasi' guardando una persona di questo cerchio."],
+["mai","Io non ho mai baciato due persone diverse nella stessa serata."],
+["mai","Io non ho mai detto 'ti amo' senza pensarlo davvero."],
+["mai","Io non ho mai avuto un ritorno di fiamma di cui mi vergogno."],
+["mai","Io non ho mai mentito a qualcuno in questo cerchio su qualcosa di importante."],
+["mai","Io non ho mai fatto una cosa a una festa che ho pregato nessuno avesse filmato."],
+["prob","Chi è più probabile che abbia il segreto più grosso in questo cerchio?"],
+["prob","Chi è più probabile che nasconda meglio i propri sentimenti?"],
+["prob","Chi è più probabile che abbia già capito tutto di tutti stasera e non dica niente?"],
+["prob","Chi finirebbe per ultimo su un'isola deserta? Al 3, puntate."],
+["vero","Classifica i presenti dal più al meno affidabile con un segreto. Ad alta voce."],
+["vero","Qual è il rifiuto che ti ha fatto più male? Versione breve, poi si beve tutti insieme in tuo onore."],
+["vero","Qual è la cosa che non hai mai detto a nessuno di questo gruppo e che puoi dire adesso?"],
+["vero","Se dovessi scambiare la tua vita con uno dei presenti per un mese, chi scegli e perché?"],
+["vero","Qual è la figuraccia che il gruppo non conosce ancora? Il gruppo vota se vale, altrimenti doppia penitenza."],
+["obbl","La persona alla tua sinistra ti fa una domanda qualsiasi. Rispondi o bevi tre volte."],
+["obbl","Consegna il telefono sbloccato alla persona di fronte per 30 secondi. Solo guardare, vietato scrivere."],
+["obbl","Racconta un segreto mai detto a nessuno dei presenti. Il gruppo giudica se è all'altezza del livello Incendio."],
+["obbl","Chiama un amico non presente e digli con voce serissima che hai vinto questo gioco. Nessun altro contesto."],
+["obbl","Il gruppo sceglie una parola. Devi infilarla in ogni frase che dici fino al prossimo turno."],
+["tutti","Momento verità: ognuno dice la cosa che apprezza di più della persona alla propria sinistra. Chi fa il vago beve."],
+["tutti","Tutti scrivono su una nota chi secondo loro sta bluffando di più stasera. Si leggono insieme. Il più votato beve."],
+["tutti","Ultimo giro: ognuno propone un brindisi a un momento di questa estate. Si beve a ogni brindisi. Poi tutti in piedi."]
+]
+};
+
+const TYPE_META = {
+  mai:  ["IO NON HO MAI","t-mai","Chi l'ha fatto, beve. Occhio agli sguardi."],
+  prob: ["CHI È PIÙ PROBABILE","t-prob","Al 3 tutti puntano il dito. Il più puntato beve."],
+  vero: ["VERITÀ","t-vero","Tocca a chi ha pescato. Rispondi o bevi doppio."],
+  obbl: ["OBBLIGO","t-obbl","Tocca a chi ha pescato. Esegui o bevi doppio."],
+  tutti:["TUTTI","t-tutti","Regola lampo per l'intero cerchio."]
+};
+
+let lvl = 1, queue = [], drawn = 0;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function setLvl(n){
+  lvl = n;
+  [1,2,3].forEach(i=>document.getElementById('lvl-'+i).classList.toggle('sel', i===n));
+}
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function startGame(){
+  queue = shuffle([...DECK[lvl]]);
+  drawn = 0;
+  document.getElementById('hud-lv').textContent = ['','🔥 Scintilla','🔥🔥 Fiamma','🔥🔥🔥 Incendio'][lvl];
+  nextCard();
+  show('s-game');
+}
+function nextCard(){
+  if(queue.length===0){ queue = shuffle([...DECK[lvl]]); }
+  const [type, text] = queue.pop();
+  drawn++;
+  const [label, cls, pen] = TYPE_META[type];
+  const c = document.getElementById('pcard');
+  c.className = 'pcard '+cls;
+  c.style.animation='none'; void c.offsetWidth; c.style.animation='';
+  c.innerHTML = `
+    <div class="heat-pips">${'🔥'.repeat(lvl)}</div>
+    <div class="ptype">${label}</div>
+    <div class="ptext">${text}</div>
+    <div class="ppen">${pen}</div>`;
+  document.getElementById('hud-cnt').textContent = 'Carta '+drawn;
+}
+</script>
+</body>
+</html>

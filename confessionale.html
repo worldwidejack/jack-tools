@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CONFESSIONALE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:ital,wght@0,400;0,600;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --notte:#150A10;
+    --velluto:#3D0F1E;
+    --velluto-chiaro:#5A1A2E;
+    --oro:#E9B44C;
+    --carta:#F6ECDC;
+    --scandalo:#E23A3A;
+    --inchiostro:#201018;
+    --verde:#4CAF7D;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:var(--notte);
+    background-image:radial-gradient(ellipse at 50% -20%, #4A1220 0%, var(--notte) 65%);
+    color:var(--carta);
+    font-family:'Archivo',system-ui,sans-serif;
+    min-height:100dvh;
+    overflow-x:hidden;
+  }
+  #app{max-width:520px;margin:0 auto;padding:24px 20px 48px;min-height:100dvh;display:flex;flex-direction:column}
+  .display{font-family:'Anton',Impact,'Arial Narrow',sans-serif;letter-spacing:.02em;text-transform:uppercase;line-height:.95}
+
+  /* ---------- stamp: the signature element ---------- */
+  .stamp{
+    display:inline-block;
+    font-family:'Anton',Impact,sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    font-size:14px;
+    color:var(--scandalo);
+    border:3px solid var(--scandalo);
+    border-radius:6px;
+    padding:6px 14px;
+    transform:rotate(-4deg);
+    animation:stampIn .35s cubic-bezier(.2,1.6,.4,1) both;
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='40'%3E%3Crect width='100' height='40' fill='white'/%3E%3C/svg%3E");
+  }
+  .stamp.oro{color:var(--oro);border-color:var(--oro)}
+  @keyframes stampIn{from{transform:rotate(-4deg) scale(2.4);opacity:0}to{transform:rotate(-4deg) scale(1);opacity:1}}
+  @media (prefers-reduced-motion:reduce){.stamp{animation:none}}
+
+  h1.title{font-size:clamp(52px,15vw,84px);color:var(--oro);text-align:center;margin:8px 0 4px}
+  .sub{color:#C9A0A9;text-align:center;font-size:15px;margin-bottom:28px}
+
+  .card{
+    background:var(--carta);
+    color:var(--inchiostro);
+    border-radius:14px;
+    padding:22px 20px;
+    box-shadow:0 8px 0 rgba(0,0,0,.35);
+  }
+  .card .q{font-family:'Anton',Impact,sans-serif;font-size:clamp(22px,6vw,30px);line-height:1.15;text-transform:none;letter-spacing:0}
+
+  .btn{
+    display:block;width:100%;
+    font-family:'Anton',Impact,sans-serif;
+    text-transform:uppercase;letter-spacing:.06em;
+    font-size:20px;
+    background:var(--oro);color:var(--inchiostro);
+    border:none;border-radius:12px;
+    padding:16px;margin-top:14px;
+    cursor:pointer;
+    box-shadow:0 5px 0 #9A7422;
+    transition:transform .06s;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 #9A7422}
+  .btn.rosso{background:var(--scandalo);color:var(--carta);box-shadow:0 5px 0 #8F1F1F}
+  .btn.rosso:active{box-shadow:0 1px 0 #8F1F1F}
+  .btn.ghost{background:transparent;color:var(--oro);box-shadow:none;border:2px solid var(--oro);font-size:16px;padding:12px}
+  .btn.ghost:active{transform:translateY(2px)}
+  .btn:disabled{opacity:.4;cursor:default}
+  .btn.verde{background:var(--verde);color:var(--inchiostro);box-shadow:0 5px 0 #2E6B4E}
+
+  input[type=text], textarea{
+    width:100%;
+    background:#fff;
+    border:2px solid #D8C7AE;
+    border-radius:10px;
+    padding:14px;
+    font-family:'Archivo',sans-serif;
+    font-size:17px;
+    color:var(--inchiostro);
+  }
+  textarea{min-height:110px;resize:vertical}
+  input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid var(--oro);outline-offset:2px}
+
+  select{
+    width:100%;background:#fff;border:2px solid #D8C7AE;border-radius:10px;
+    padding:12px;font-size:16px;font-family:'Archivo',sans-serif;color:var(--inchiostro);
+  }
+
+  .center{text-align:center}
+  .grow{flex:1}
+  .mt8{margin-top:8px}.mt16{margin-top:16px}.mt24{margin-top:24px}.mt32{margin-top:32px}
+
+  /* pass screen */
+  .pass-name{font-size:clamp(56px,18vw,96px);color:var(--carta);margin:12px 0}
+  .pass-wrap{display:flex;flex-direction:column;justify-content:center;flex:1;text-align:center}
+
+  /* answers list */
+  .ans{
+    background:var(--carta);color:var(--inchiostro);
+    border-radius:12px;padding:14px 16px;margin-top:12px;
+    display:flex;gap:12px;align-items:flex-start;
+  }
+  .ans .lettera{
+    font-family:'Anton',Impact,sans-serif;font-size:22px;color:var(--scandalo);
+    min-width:28px;
+  }
+  .ans .testo{font-size:16px;line-height:1.35;flex:1}
+  .ans.mine{outline:3px dashed var(--oro)}
+
+  /* vote bars */
+  .bar-row{margin-top:14px}
+  .bar-label{display:flex;justify-content:space-between;font-weight:600;font-size:15px;margin-bottom:4px}
+  .bar-track{background:rgba(246,236,220,.12);border-radius:6px;height:26px;overflow:hidden}
+  .bar-fill{height:100%;background:var(--oro);border-radius:6px;min-width:4px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .bar-row.max .bar-fill{background:var(--scandalo)}
+
+  /* scoreboard */
+  .score-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:12px 4px;border-bottom:1px solid rgba(246,236,220,.15);
+    font-size:18px;
+  }
+  .score-row .pos{color:var(--oro);font-family:'Anton',Impact,sans-serif;margin-right:10px}
+  .score-row .pts{font-family:'Anton',Impact,sans-serif;color:var(--oro)}
+  .score-row.first .pts{color:var(--scandalo)}
+
+  /* timer */
+  .timer{
+    font-family:'Anton',Impact,sans-serif;
+    font-size:clamp(64px,22vw,110px);
+    color:var(--oro);
+    text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .timer.rosso{color:var(--scandalo)}
+
+  /* loading */
+  .load-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:20px}
+  .spinner{
+    width:52px;height:52px;border-radius:50%;
+    border:5px solid rgba(233,180,76,.2);border-top-color:var(--oro);
+    animation:spin 1s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .load-msg{color:#C9A0A9;font-size:15px;font-style:italic;max-width:280px}
+
+  .player-input-row{display:flex;gap:8px;margin-top:10px}
+  .player-input-row button{
+    background:transparent;border:2px solid rgba(246,236,220,.3);color:var(--carta);
+    border-radius:10px;width:48px;font-size:20px;cursor:pointer;
+  }
+  .kicker{color:var(--oro);font-family:'Anton',Impact,sans-serif;letter-spacing:.12em;font-size:13px;text-transform:uppercase}
+  .toast{
+    position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+    background:var(--inchiostro);color:var(--carta);padding:10px 18px;border-radius:10px;
+    font-size:14px;border:1px solid rgba(233,180,76,.4);z-index:99;
+    animation:fadeUp .3s both;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+  .titolo-card{background:var(--carta);color:var(--inchiostro);border-radius:14px;padding:18px;margin-top:14px}
+  .titolo-card .nome{font-weight:800;font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:#8A5A18}
+  .titolo-card .titolo{font-family:'Anton',Impact,sans-serif;font-size:24px;margin:4px 0 6px;color:var(--scandalo)}
+  .titolo-card .motiv{font-size:14px;line-height:1.4;font-style:italic;color:#5A4A3A}
+</style>
+</head>
+<body>
+<div id="app" role="main"></div>
+<script>
+"use strict";
+
+/* ================= STATE ================= */
+const S = {
+  players: [],          // {name, score, timesAccused, correctGuesses, timesUnmasked}
+  roundNum: 0,
+  totalRounds: 6,
+  roundOrder: [],       // sequence of round types
+  usedPrompts: [],
+  aiOnline: true,
+};
+
+const app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle = a => { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; };
+const rand = a => a[Math.floor(Math.random()*a.length)];
+
+function toast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2600);
+}
+
+/* ================= FALLBACK CONTENT ================= */
+const FB = {
+  confessioni: [
+    "La cosa più squallida che hai fatto per rimorchiare qualcuno.",
+    "Il messaggio più imbarazzante che hai mandato ubriaco. Citalo il più fedelmente possibile.",
+    "Una cosa che hai fatto in bagno a casa di altri e che non hai mai confessato.",
+    "La bugia più grossa che hai raccontato ai tuoi genitori dopo i 20 anni.",
+    "La ricerca più inquietante nella tua cronologia che cancelleresti davanti a tutti.",
+    "Il momento esatto in cui hai capito di aver toccato il fondo a una festa.",
+    "Una cosa che hai fatto per soldi e di cui ti vergogni ancora.",
+    "Il pensiero più cattivo che hai avuto su una persona presente in questa stanza.",
+    "La figura di merda che ancora ti sveglia di notte.",
+    "Una cosa che hai rubato e non hai mai restituito."
+  ],
+  chidinoi: [
+    "Chi di voi finirebbe in un programma trash TV senza nemmeno accorgersene?",
+    "Chi di voi ha la cronologia del telefono peggiore?",
+    "Chi di voi sopravviverebbe meno di 24 ore in prigione?",
+    "Chi di voi verrebbe lasciato per messaggio... e se lo meriterebbe?",
+    "Chi di voi ha pianto per una cosa oggettivamente ridicola?",
+    "Chi di voi tradirebbe il gruppo per una persona conosciuta da tre giorni?",
+    "Chi di voi si crede più affascinante di quanto sia davvero?",
+    "Chi di voi finirà sicuramente a fare un lavoro che ora disprezza?",
+    "Chi di voi ha mentito almeno una volta stasera?",
+    "Chi di voi manderebbe un vocale di 6 minuti per dire una cosa da 10 secondi?"
+  ],
+  mai: [
+    "Io non ho mai mandato una foto spinta alla persona sbagliata.",
+    "Io non ho mai fatto sesso in casa dei genitori di qualcun altro.",
+    "Io non ho mai finto un orgasmo per far finire prima la faccenda.",
+    "Io non ho mai riaperto la chat di un ex solo per una notte.",
+    "Io non ho mai pensato a un'altra persona mentre ero a letto con qualcuno.",
+    "Io non ho mai fatto sexting mentre ero a un pranzo di famiglia.",
+    "Io non ho mai avuto una storia con qualcuno che un amico del gruppo si voleva fare.",
+    "Io non ho mai mentito sul numero di persone con cui sono stato/a.",
+    "Io non ho mai fatto sesso da qualche parte dove potevano beccarci.",
+    "Io non ho mai stalkerato il profilo della nuova fiamma di un ex fino a farmi male da solo/a."
+  ],
+  titoli: [
+    ["Il Bugiardo Patologico","Nessuno ha mai indovinato le sue risposte. Sospetto."],
+    ["L'Autoincriminato","Si è dato la zappa sui piedi a ogni round."],
+    ["Il Santo Falso","Troppo pulito per essere vero."],
+    ["Il Capro Espiatorio","Votato da tutti, sempre, per tutto."],
+    ["Il Pubblico Ministero Nato","Vive per accusare gli altri."],
+    ["Lo Scandalo Ambulante","Ogni confessione era sua. Tutte."],
+    ["Il Sopravvissuto","Ha vinto solo perché gli altri si sono distrutti a vicenda."],
+    ["La Mente Criminale","Ha manipolato ogni voto. Rispetto."]
+  ]
+};
+
+/* ================= AI ================= */
+const SYS = "Sei il generatore di contenuti di CONFESSIONALE, un party game italiano per un gruppo di amici stretti adulti di 25-27 anni. Tono: spinto, volgare, imbarazzante, da serata alcolica tra amici fidati, zero filtri. Temi centrali e benvenuti: sesso, dating disastroso, corna, sexting, avventure imbarazzanti a letto, fantasie squallide, app di incontri, figure di merda erotiche. Umorismo cattivo ma mai odio: niente attacchi a etnie, orientamento, religione, aspetto fisico o disabilità, e niente riferimenti a persone non consenzienti o minorenni. Scrivi in italiano colloquiale e diretto, senza giri di parole puritani. Rispondi SOLO con JSON valido, senza backtick, senza testo extra.";
+
+async function askAI(userPrompt){
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1000,
+      system: SYS,
+      messages: [{ role: "user", content: userPrompt }]
+    })
+  });
+  const data = await res.json();
+  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+  const clean = text.replace(/```json|```/g, "").trim();
+  return JSON.parse(clean);
+}
+
+async function aiOrFallback(userPrompt, fallbackFn){
+  try {
+    const out = await askAI(userPrompt);
+    S.aiOnline = true;
+    return out;
+  } catch(e) {
+    if (S.aiOnline) toast("AI in pausa sigaretta: uso la riserva 🚬");
+    S.aiOnline = false;
+    return fallbackFn();
+  }
+}
+
+const LOAD_MSGS = [
+  "L'AI sta scavando nel torbido...",
+  "Consultazione con l'avvocato del diavolo...",
+  "Stiamo intercettando le vostre chat...",
+  "Il confessionale si sta riscaldando...",
+  "Raccolta prove compromettenti in corso...",
+  "L'AI sta giudicando le vostre vite...",
+];
+
+function loadingScreen(msg){
+  app.innerHTML = `
+    <div class="load-wrap">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="display" style="font-size:26px;color:var(--oro)">Un attimo</div>
+      <div class="load-msg">${esc(msg || rand(LOAD_MSGS))}</div>
+    </div>`;
+}
+
+/* ================= SETUP ================= */
+let setupNames = ["","","","",""];
+
+function renderSetup(){
+  app.innerHTML = `
+    <div class="center mt16"><span class="stamp">Vietato ai deboli</span></div>
+    <h1 class="title display">Confessionale</h1>
+    <p class="sub">Un telefono. Zero filtri. Nessun perdono.</p>
+    <div class="kicker">I sospettati</div>
+    <div id="nameList"></div>
+    <button class="btn ghost" id="addPlayer">+ Aggiungi sospettato</button>
+    <div class="grow"></div>
+    <button class="btn rosso" id="startBtn">Inizia il processo</button>
+  `;
+  const list = document.getElementById('nameList');
+  function draw(){
+    list.innerHTML = setupNames.map((n,i)=>`
+      <div class="player-input-row">
+        <input type="text" maxlength="14" placeholder="Nome ${i+1}" value="${esc(n)}" data-i="${i}" aria-label="Nome giocatore ${i+1}">
+        ${setupNames.length>3?`<button data-del="${i}" aria-label="Rimuovi">✕</button>`:''}
+      </div>`).join('');
+    list.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', e => { setupNames[+e.target.dataset.i]=e.target.value; });
+    });
+    list.querySelectorAll('button[data-del]').forEach(b=>{
+      b.addEventListener('click', e => { setupNames.splice(+e.currentTarget.dataset.del,1); draw(); });
+    });
+  }
+  draw();
+  document.getElementById('addPlayer').onclick = ()=>{
+    if(setupNames.length<8){ setupNames.push(""); draw(); }
+  };
+  document.getElementById('startBtn').onclick = ()=>{
+    const names = setupNames.map(n=>n.trim()).filter(Boolean);
+    if(names.length<3){ toast("Servono almeno 3 nomi"); return; }
+    const uniq = new Set(names.map(n=>n.toLowerCase()));
+    if(uniq.size!==names.length){ toast("Nomi doppi: cambiateli"); return; }
+    startGame(names);
+  };
+}
+
+function startGame(names){
+  S.players = names.map(n=>({name:n, score:0, timesAccused:0, correctGuesses:0, timesUnmasked:0, timesDone:0}));
+  S.roundNum = 0;
+  S.usedPrompts = [];
+  // 6 rounds: 2 cycles of the 3 types, shuffled within each cycle
+  S.roundOrder = [...shuffle(['conf','chi','mai']), ...shuffle(['conf','chi','mai'])];
+  nextRound();
+}
+
+function nextRound(){
+  if(S.roundNum >= S.roundOrder.length){ return finaleScreen(); }
+  const type = S.roundOrder[S.roundNum];
+  S.roundNum++;
+  roundIntro(type);
+}
+
+const ROUND_META = {
+  conf: { label:"Confessioni anonime", desc:"L'AI fa la domanda. Tutti confessano in segreto. Poi si scopre chi ha scritto cosa. Indovina: +100. Se nessuno ti sgama: bonus." },
+  chi:  { label:"Chi di noi", desc:"L'AI fa una domanda cattiva. Tutti votano un nome in segreto. Il più votato deve difendersi in 30 secondi." },
+  mai: { label:"Io non ho mai · Bollino rosso", desc:"L'AI spara un \"Io non ho mai\" spinto. Rispondi in segreto e prevedi quanti del gruppo l'hanno fatto. Poi: reveal dei nomi." }
+};
+
+function roundIntro(type){
+  const m = ROUND_META[type];
+  app.innerHTML = `
+    <div class="pass-wrap">
+      <div class="kicker">Round ${S.roundNum} di ${S.roundOrder.length}</div>
+      <div class="center mt16"><span class="stamp oro" style="font-size:20px;padding:10px 20px">${esc(m.label)}</span></div>
+      <p class="mt24" style="color:#C9A0A9;font-size:16px;line-height:1.5;text-align:center">${esc(m.desc)}</p>
+      <button class="btn mt32" id="go">Vai</button>
+    </div>`;
+  document.getElementById('go').onclick = ()=>{
+    if(type==='conf') startConfessioni();
+    else if(type==='chi') startChiDiNoi();
+    else startNonHoMai();
+  };
+}
+
+/* pass-the-phone gate */
+function passScreen(name, sub, cb){
+  app.innerHTML = `
+    <div class="pass-wrap">
+      <div class="kicker">Passa il telefono a</div>
+      <div class="pass-name display">${esc(name)}</div>
+      <p style="color:#C9A0A9">${esc(sub||"Gli altri: occhi altrove.")}</p>
+      <button class="btn mt24" id="me">Sono ${esc(name)}</button>
+    </div>`;
+  document.getElementById('me').onclick = cb;
+}
+
+/* ================= ROUND 1: CONFESSIONI ================= */
+async function startConfessioni(){
+  loadingScreen();
+  const used = S.usedPrompts.slice(-12).map(p=>`- ${p}`).join("\n") || "(nessuna)";
+  const out = await aiOrFallback(
+    `Genera 1 domanda-confessione SPINTA per il round "Confessioni anonime". Tema: sesso, dating, corna, chat compromettenti, momenti imbarazzanti a letto. Deve spingere ognuno a raccontare un aneddoto vero e piccante della propria vita, rispondibile in 1-2 frasi. Breve e diretta. Evita queste già usate:\n${used}\n\nJSON: {"prompt":"..."}`,
+    ()=>({prompt: rand(FB.confessioni.filter(p=>!S.usedPrompts.includes(p)) .length ? FB.confessioni.filter(p=>!S.usedPrompts.includes(p)) : FB.confessioni)})
+  );
+  S.usedPrompts.push(out.prompt);
+  confessioniWrite(out.prompt);
+}
+
+function confessioniWrite(prompt){
+  const order = shuffle(S.players.map((_,i)=>i));
+  const answers = []; // {author, text}
+  let k = 0;
+
+  function next(){
+    if(k >= order.length){ return confessioniGuess(prompt, answers); }
+    const idx = order[k];
+    passScreen(S.players[idx].name, "Confessione in arrivo. Occhi altrove.", ()=>{
+      app.innerHTML = `
+        <div class="center"><span class="stamp">Confessione</span></div>
+        <div class="card mt24"><div class="q">${esc(prompt)}</div></div>
+        <textarea id="ans" class="mt16" maxlength="200" placeholder="Scrivi la verità. O una bugia credibile."></textarea>
+        <div class="grow"></div>
+        <button class="btn rosso" id="send">Confesso e passo</button>`;
+      document.getElementById('send').onclick = ()=>{
+        const t = document.getElementById('ans').value.trim();
+        if(!t){ toast("Vuoto? Confessa qualcosa, codardo"); return; }
+        answers.push({author: idx, text: t});
+        k++;
+        next();
+      };
+    });
+  }
+  next();
+}
+
+function confessioniGuess(prompt, answers){
+  const shuffled = shuffle(answers);
+  const letters = "ABCDEFGH";
+  const order = shuffle(S.players.map((_,i)=>i));
+  const guesses = {}; // guesserIdx -> {ansIdx: playerIdx}
+  let k = 0;
+
+  function next(){
+    if(k >= order.length){ return confessioniResults(prompt, shuffled, guesses); }
+    const g = order[k];
+    passScreen(S.players[g].name, "Ora indovina chi ha scritto cosa.", ()=>{
+      const options = S.players.map((p,i)=>({i, name:p.name})).filter(o=>o.i!==g);
+      app.innerHTML = `
+        <div class="center"><span class="stamp oro">Chi è stato?</span></div>
+        <div class="card mt16"><div class="q" style="font-size:18px">${esc(prompt)}</div></div>
+        <div id="list"></div>
+        <div class="grow"></div>
+        <button class="btn mt16" id="ok">Confermo le accuse</button>`;
+      const list = document.getElementById('list');
+      list.innerHTML = shuffled.map((a,ai)=>{
+        const mine = a.author === g;
+        return `
+        <div class="ans ${mine?'mine':''}">
+          <div class="lettera">${letters[ai]}</div>
+          <div class="testo">
+            ${esc(a.text)}
+            ${mine
+              ? `<div class="mt8" style="font-weight:800;color:#8A5A18">Questa è la tua.</div>`
+              : `<select class="mt8" data-ai="${ai}" aria-label="Autore risposta ${letters[ai]}">
+                   <option value="">— Chi è stato? —</option>
+                   ${options.map(o=>`<option value="${o.i}">${esc(o.name)}</option>`).join('')}
+                 </select>`}
+          </div>
+        </div>`;
+      }).join('');
+      document.getElementById('ok').onclick = ()=>{
+        const sel = [...list.querySelectorAll('select')];
+        if(sel.some(s=>!s.value)){ toast("Accusa tutti, non fare il diplomatico"); return; }
+        guesses[g] = {};
+        sel.forEach(s=>{ guesses[g][+s.dataset.ai] = +s.value; });
+        k++;
+        next();
+      };
+    });
+  }
+  next();
+}
+
+function confessioniResults(prompt, shuffled, guesses){
+  const letters = "ABCDEFGH";
+  // scoring
+  const gained = {};
+  S.players.forEach((_,i)=>gained[i]=0);
+  shuffled.forEach((a,ai)=>{
+    let unmaskedBy = 0;
+    Object.entries(guesses).forEach(([g, map])=>{
+      const gi = +g;
+      if(gi === a.author) return;
+      if(map[ai] === a.author){ gained[gi]+=100; S.players[gi].correctGuesses++; unmaskedBy++; }
+    });
+    const others = Object.keys(guesses).length - 1;
+    const missed = Math.max(0, others - unmaskedBy);
+    gained[a.author] += missed * 75;
+    if(unmaskedBy > 0) S.players[a.author].timesUnmasked++;
+  });
+  Object.entries(gained).forEach(([i,pts])=>S.players[+i].score+=pts);
+
+  app.innerHTML = `
+    <div class="center"><span class="stamp">Smascherati</span></div>
+    <div class="card mt16"><div class="q" style="font-size:18px">${esc(prompt)}</div></div>
+    <div id="rev"></div>
+    <div class="grow"></div>
+    <button class="btn mt16" id="ok">Classifica</button>`;
+  document.getElementById('rev').innerHTML = shuffled.map((a,ai)=>{
+    const whoGuessed = Object.entries(guesses)
+      .filter(([g,map])=>+g!==a.author && map[ai]===a.author)
+      .map(([g])=>S.players[+g].name);
+    return `
+      <div class="ans">
+        <div class="lettera">${letters[ai]}</div>
+        <div class="testo">
+          ${esc(a.text)}
+          <div class="mt8" style="font-weight:800;color:var(--scandalo)">→ ${esc(S.players[a.author].name)}</div>
+          <div style="font-size:13px;color:#7A6A5A">${whoGuessed.length? "Sgamato da: "+esc(whoGuessed.join(", ")) : "Nessuno l'ha sgamato. +"+(75*(Object.keys(guesses).length-1))+" pt di faccia tosta"}</div>
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('ok').onclick = ()=>scoreboard(gained);
+}
+
+/* ================= ROUND 2: CHI DI NOI ================= */
+async function startChiDiNoi(){
+  loadingScreen();
+  const used = S.usedPrompts.slice(-12).map(p=>`- ${p}`).join("\n") || "(nessuna)";
+  const out = await aiOrFallback(
+    `Genera 1 domanda "Chi di voi..." SPINTA per un round di voto anonimo. Deve essere cattiva, piccante e divertente: sesso, dating, corna, app di incontri, segreti da camera da letto, figure di merda erotiche. Inizia con "Chi di voi". Evita queste già usate:\n${used}\n\nJSON: {"prompt":"..."}`,
+    ()=>({prompt: rand(FB.chidinoi)})
+  );
+  S.usedPrompts.push(out.prompt);
+  chiVote(out.prompt);
+}
+
+function chiVote(prompt){
+  const order = shuffle(S.players.map((_,i)=>i));
+  const votes = {}; // voterIdx -> votedIdx
+  let k = 0;
+
+  function next(){
+    if(k >= order.length){ return chiResults(prompt, votes); }
+    const v = order[k];
+    passScreen(S.players[v].name, "Vota in segreto. Puoi anche votarti.", ()=>{
+      app.innerHTML = `
+        <div class="center"><span class="stamp oro">Chi di noi</span></div>
+        <div class="card mt16"><div class="q">${esc(prompt)}</div></div>
+        <div id="opts"></div>`;
+      document.getElementById('opts').innerHTML = S.players.map((p,i)=>
+        `<button class="btn ghost mt8" data-i="${i}" style="font-family:'Anton',Impact,sans-serif">${esc(p.name)}</button>`
+      ).join('');
+      document.querySelectorAll('#opts button').forEach(b=>{
+        b.onclick = ()=>{ votes[v]=+b.dataset.i; k++; next(); };
+      });
+    });
+  }
+  next();
+}
+
+function chiResults(prompt, votes){
+  const counts = S.players.map(()=>0);
+  Object.values(votes).forEach(i=>counts[i]++);
+  const max = Math.max(...counts);
+  const accusedIdxs = counts.map((c,i)=>c===max?i:-1).filter(i=>i>=0);
+
+  const gained = {};
+  S.players.forEach((_,i)=>gained[i]=0);
+  Object.entries(votes).forEach(([voter, voted])=>{
+    if(counts[voted]===max) gained[+voter]+=50; // voted with the crowd
+  });
+  accusedIdxs.forEach(i=>{ gained[i]+=100; S.players[i].timesAccused++; });
+  Object.entries(gained).forEach(([i,pts])=>S.players[+i].score+=pts);
+
+  const names = accusedIdxs.map(i=>S.players[i].name).join(" e ");
+  app.innerHTML = `
+    <div class="center"><span class="stamp">Il verdetto</span></div>
+    <div class="card mt16"><div class="q" style="font-size:18px">${esc(prompt)}</div></div>
+    <div id="bars"></div>
+    <p class="mt24 center" style="color:#C9A0A9">Chi vota col gregge: +50. La vittima: +100 per la sofferenza.</p>
+    <button class="btn rosso mt16" id="def">${esc(names)}: difesa, 30 secondi</button>
+    <button class="btn ghost mt8" id="skip">Nessuna difesa, colpevole e basta</button>`;
+  document.getElementById('bars').innerHTML = S.players.map((p,i)=>`
+    <div class="bar-row ${counts[i]===max&&max>0?'max':''}">
+      <div class="bar-label"><span>${esc(p.name)}</span><span>${counts[i]}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%" data-w="${max? (counts[i]/max*100):0}"></div></div>
+    </div>`).join('');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelectorAll('.bar-fill').forEach(f=>f.style.width=f.dataset.w+"%");
+  }));
+  document.getElementById('def').onclick = ()=>runTimer(30, `${names}: convinceteci`, ()=>scoreboard(gained));
+  document.getElementById('skip').onclick = ()=>scoreboard(gained);
+}
+
+/* ================= ROUND 3: IO NON HO MAI — BOLLINO ROSSO ================= */
+async function startNonHoMai(){
+  loadingScreen("Il bollino rosso si sta scaldando...");
+  const used = S.usedPrompts.slice(-12).map(p=>`- ${p}`).join("\n") || "(nessuna)";
+  const out = await aiOrFallback(
+    `Genera 1 frase "Io non ho mai..." SPINTA per un gruppo di amici adulti: sesso, sexting, corna, dating, avventure imbarazzanti, roba da bollino rosso. Deve essere abbastanza comune da creare suspense (non impossibile, non banale). Inizia con "Io non ho mai". Evita queste già usate:\n${used}\n\nJSON: {"prompt":"..."}`,
+    ()=>({prompt: rand(FB.mai)})
+  );
+  S.usedPrompts.push(out.prompt);
+  maiAnswer(out.prompt);
+}
+
+function maiAnswer(prompt){
+  const order = shuffle(S.players.map((_,i)=>i));
+  const answers = {};     // playerIdx -> true (l'ho fatto) | false
+  const predictions = {}; // playerIdx -> predicted count
+  let k = 0;
+  const n = S.players.length;
+
+  function next(){
+    if(k >= order.length){ return maiResults(prompt, answers, predictions); }
+    const p = order[k];
+    passScreen(S.players[p].name, "Bollino rosso. Rispondi in segreto.", ()=>{
+      app.innerHTML = `
+        <div class="center"><span class="stamp">Bollino rosso</span></div>
+        <div class="card mt16"><div class="q">${esc(prompt)}</div></div>
+        <div id="step1">
+          <button class="btn rosso mt24" id="fatto">L'ho fatto 😏</button>
+          <button class="btn verde mt8" id="mai">Mai fatto 😇</button>
+        </div>
+        <div id="step2" style="display:none">
+          <p class="mt24 center" style="color:#C9A0A9">In quanti del gruppo (te compreso) l'hanno fatto secondo te?</p>
+          <div id="nums" class="mt8" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
+        </div>`;
+      const step2 = document.getElementById('step2');
+      const showStep2 = ()=>{
+        document.getElementById('step1').style.display='none';
+        step2.style.display='block';
+        const nums = document.getElementById('nums');
+        nums.innerHTML = Array.from({length:n+1},(_,c)=>
+          `<button class="btn ghost" style="padding:14px 0;font-family:'Anton',Impact,sans-serif;font-size:22px" data-c="${c}">${c}</button>`).join('');
+        nums.querySelectorAll('button').forEach(b=>{
+          b.onclick = ()=>{ predictions[p]=+b.dataset.c; k++; next(); };
+        });
+      };
+      document.getElementById('fatto').onclick = ()=>{ answers[p]=true; showStep2(); };
+      document.getElementById('mai').onclick   = ()=>{ answers[p]=false; showStep2(); };
+    });
+  }
+  next();
+}
+
+function maiResults(prompt, answers, predictions){
+  const doneIdxs = Object.entries(answers).filter(([,v])=>v).map(([i])=>+i);
+  const count = doneIdxs.length;
+  const n = S.players.length;
+
+  const gained = {};
+  S.players.forEach((_,i)=>gained[i]=0);
+  doneIdxs.forEach(i=>{ gained[i]+=50; S.players[i].timesDone++; });          // premio sincerità
+  Object.entries(predictions).forEach(([i,c])=>{ if(c===count) gained[+i]+=100; }); // profeta del degrado
+  Object.entries(gained).forEach(([i,pts])=>S.players[+i].score+=pts);
+
+  const prophets = Object.entries(predictions).filter(([,c])=>c===count).map(([i])=>S.players[+i].name);
+
+  // Two-step reveal: first the number, then the names
+  app.innerHTML = `
+    <div class="pass-wrap">
+      <div class="center"><span class="stamp oro">Il verdetto</span></div>
+      <div class="card mt16"><div class="q" style="font-size:18px">${esc(prompt)}</div></div>
+      <div class="timer mt24" style="font-size:clamp(72px,26vw,130px)">${count}</div>
+      <p class="center" style="color:#C9A0A9;margin-top:-8px">su ${n} l'hanno fatto</p>
+      <button class="btn rosso mt24" id="names">Fai i nomi</button>
+    </div>`;
+  document.getElementById('names').onclick = ()=>{
+    app.innerHTML = `
+      <div class="center"><span class="stamp">Smascherati</span></div>
+      <div class="card mt16"><div class="q" style="font-size:18px">${esc(prompt)}</div></div>
+      <div id="who" class="mt16"></div>
+      <p class="mt16 center" style="color:#C9A0A9;font-size:14px">Sincerità: +50 · Previsione esatta: +100${prophets.length? " ("+esc(prophets.join(", "))+")" : " (nessun profeta stavolta)"}</p>
+      <div class="grow"></div>
+      <button class="btn mt16" id="ok">Classifica</button>`;
+    document.getElementById('who').innerHTML = count===0
+      ? `<div class="ans"><div class="testo center" style="width:100%">Nessuno. Un gruppo di santi. O di bugiardi.</div></div>`
+      : S.players.map((p,i)=>`
+        <div class="ans" style="${answers[i]?'':'opacity:.45'}">
+          <div class="lettera">${answers[i]?'😏':'😇'}</div>
+          <div class="testo"><b>${esc(p.name)}</b> — ${answers[i]?"L'ha fatto":"Mai fatto (dice)"}
+            <span style="color:#7A6A5A;font-size:13px"> · aveva previsto ${predictions[i]}</span></div>
+        </div>`).join('');
+    document.getElementById('ok').onclick = ()=>scoreboard(gained);
+  };
+}
+
+/* ================= TIMER ================= */
+function runTimer(seconds, label, done, startLabel){
+  let t = seconds, iv = null;
+  app.innerHTML = `
+    <div class="pass-wrap">
+      <div class="kicker center">${esc(label)}</div>
+      <div class="timer" id="tm">${t}</div>
+      <button class="btn" id="start">${esc(startLabel||"Via")}</button>
+      <button class="btn ghost mt8" id="skip">Salta</button>
+    </div>`;
+  const tm = document.getElementById('tm');
+  document.getElementById('start').onclick = e=>{
+    e.target.disabled = true;
+    iv = setInterval(()=>{
+      t--;
+      tm.textContent = t;
+      if(t<=10) tm.classList.add('rosso');
+      if(t<=0){ clearInterval(iv); setTimeout(done, 600); }
+    },1000);
+  };
+  document.getElementById('skip').onclick = ()=>{ if(iv) clearInterval(iv); done(); };
+}
+
+/* ================= SCOREBOARD ================= */
+function scoreboard(gained){
+  const sorted = S.players.map((p,i)=>({...p,i})).sort((a,b)=>b.score-a.score);
+  const last = S.roundNum >= S.roundOrder.length;
+  app.innerHTML = `
+    <div class="center"><span class="stamp oro">Classifica</span></div>
+    <div class="mt16" id="rows"></div>
+    <div class="grow"></div>
+    <button class="btn rosso mt24" id="next">${last ? "Verdetto finale" : "Round "+(S.roundNum+1)}</button>`;
+  document.getElementById('rows').innerHTML = sorted.map((p,pos)=>`
+    <div class="score-row ${pos===0?'first':''}">
+      <span><span class="pos">${pos+1}.</span>${esc(p.name)}
+        ${gained && gained[p.i] ? `<span style="color:var(--verde);font-size:14px"> +${gained[p.i]}</span>`:''}
+      </span>
+      <span class="pts">${p.score}</span>
+    </div>`).join('');
+  document.getElementById('next').onclick = nextRound;
+}
+
+/* ================= FINALE ================= */
+async function finaleScreen(){
+  loadingScreen("La sentenza definitiva è in scrittura...");
+  const stats = S.players.map(p=>({
+    nome: p.name, punti: p.score,
+    volte_accusato_da_gruppo: p.timesAccused,
+    sgamate_riuscite: p.correctGuesses,
+    volte_smascherato: p.timesUnmasked,
+    volte_ha_fatto_cose_da_bollino_rosso: p.timesDone
+  }));
+  const out = await aiOrFallback(
+    `Fine partita di CONFESSIONALE. Statistiche giocatori: ${JSON.stringify(stats)}. Genera per OGNI giocatore un titolo cattivo e divertente da fine serata (tipo "Il Bugiardo Patologico") con una motivazione di 1 frase basata sulle sue statistiche. JSON: {"titoli":[{"nome":"...","titolo":"...","motivazione":"..."}]}`,
+    ()=>({titoli: S.players.map((p,idx)=>{
+      const [t,m] = FB.titoli[idx % FB.titoli.length];
+      return {nome:p.name, titolo:t, motivazione:m};
+    })})
+  );
+
+  const sorted = [...S.players].sort((a,b)=>b.score-a.score);
+  const winner = sorted[0];
+  app.innerHTML = `
+    <div class="center mt16"><span class="stamp" style="font-size:20px;padding:10px 20px">Caso chiuso</span></div>
+    <h1 class="title display" style="font-size:clamp(36px,10vw,56px)">${esc(winner.name)} vince</h1>
+    <p class="sub">${winner.score} punti di pura infamia</p>
+    <div id="titoli"></div>
+    <div class="grow"></div>
+    <button class="btn mt24" id="again">Nuova partita, stessi degenerati</button>
+    <button class="btn ghost mt8" id="reset">Cambia giocatori</button>`;
+  const map = {};
+  (out.titoli||[]).forEach(t=>{ map[(t.nome||"").toLowerCase()] = t; });
+  document.getElementById('titoli').innerHTML = sorted.map(p=>{
+    const t = map[p.name.toLowerCase()] || {titolo:"Il Sopravvissuto", motivazione:"È arrivato in fondo. Tanto basta."};
+    return `
+      <div class="titolo-card">
+        <div class="nome">${esc(p.name)} · ${p.score} pt</div>
+        <div class="titolo">${esc(t.titolo)}</div>
+        <div class="motiv">${esc(t.motivazione)}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('again').onclick = ()=>startGame(S.players.map(p=>p.name));
+  document.getElementById('reset').onclick = ()=>{ setupNames = S.players.map(p=>p.name); while(setupNames.length<3) setupNames.push(""); renderSetup(); };
+}
+
+renderSetup();
+</script>
+</body>
+</html>

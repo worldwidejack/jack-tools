@@ -33,6 +33,13 @@
   .tag{font-size:10.5px; color:var(--dim2); border:1px solid var(--line);
        border-radius:20px; padding:2px 8px; white-space:nowrap; flex:0 0 auto}
   .note{color:var(--dim2); font-size:12.5px; margin:-2px 0 14px; line-height:1.6}
+  .group{border:1px solid var(--line); border-radius:16px; padding:14px 14px 4px;
+         background:rgba(255,255,255,.014)}
+  .group .gtitle{display:flex; align-items:center; gap:10px; margin:2px 4px 4px}
+  .group .gtitle .gi{font-size:22px}
+  .group .gtitle .gt{font-weight:600; font-size:15.5px}
+  .group .gtitle .gd{color:var(--dim2); font-size:12.5px; margin-top:1px}
+  .group .card{background:var(--card); margin-bottom:10px}
   footer{color:var(--dim2); font-size:12px; margin-top:38px; text-align:center; line-height:1.8;
          border-top:1px solid var(--line); padding-top:20px}
 </style>
@@ -53,6 +60,20 @@
     <span class="arw">&rsaquo;</span>
   </a>
 
+  <a class="card" href="confessionale.html">
+    <span class="ico">&#128584;</span>
+    <span class="body"><span class="t">Confessionale</span><span class="d">Confessioni, scandali e voti: chi la spara pi&ugrave; grossa vince.</span></span>
+    <span class="tag">18+</span>
+    <span class="arw">&rsaquo;</span>
+  </a>
+
+  <a class="card" href="benzina.html">
+    <span class="ico">&#128293;</span>
+    <span class="body"><span class="t">Benzina</span><span class="d">Il gioco che scalda. Si sale di giro finch&eacute; qualcuno non si tira indietro.</span></span>
+    <span class="tag">18+</span>
+    <span class="arw">&rsaquo;</span>
+  </a>
+
   <a class="card" href="baffo-show.html">
     <span class="ico">&#129330;</span>
     <span class="body"><span class="t">Il Baffo Show</span><span class="d">Party game a squadre in stile Family Feud, con sondaggi e modalit&agrave; vocale.</span></span>
@@ -65,19 +86,67 @@
     <span class="arw">&rsaquo;</span>
   </a>
 
-  <h2>Strumenti</h2>
+  <h2>Camera da letto</h2>
+  <p class="note">Un progetto solo, guardato da tre lati: la pianta, il volume, e la roba che ci sta dentro.</p>
 
-  <a class="card" href="planimetria-camera.html">
-    <span class="ico">&#128208;</span>
-    <span class="body"><span class="t">Planimetria camera</span><span class="d">La stanza in scala &mdash; 14,64 m&sup2;, mobili al 34% del pavimento.</span></span>
-    <span class="arw">&rsaquo;</span>
-  </a>
+  <div class="group">
+    <a class="card" href="camera/planimetria.html">
+      <span class="ico">&#128208;</span>
+      <span class="body"><span class="t">Planimetria</span><span class="d">La stanza in scala &mdash; 14,64 m&sup2;, mobili al 34% del pavimento.</span></span>
+      <span class="arw">&rsaquo;</span>
+    </a>
 
-  <a class="card" href="camera-3d.html">
-    <span class="ico">&#129482;</span>
-    <span class="body"><span class="t">Camera in 3D</span><span class="d">La stessa stanza, girabile.</span></span>
-    <span class="arw">&rsaquo;</span>
-  </a>
+    <a class="card" href="camera/3d.html">
+      <span class="ico">&#129482;</span>
+      <span class="body"><span class="t">La stessa stanza in 3D</span><span class="d">Girabile, per capire i volumi che la pianta non fa vedere.</span></span>
+      <span class="arw">&rsaquo;</span>
+    </a>
+
+    <a class="card" href="camera/guardaroba.html">
+      <span class="ico">&#128085;</span>
+      <span class="body"><span class="t">Archivio guardaroba</span><span class="d">Tutti i capi schedati: tier, colori, cosa tenere e cosa vendere.</span></span>
+      <span class="arw">&rsaquo;</span>
+    </a>
+  </div>
+
+  <h2>Creative &mdash; After Effects &amp; Premiere</h2>
+  <p class="note">Script che girano <em>dentro</em> Adobe, non nel browser: da qui non si aprono. Nati quasi tutti sul progetto Enzo &mdash; il video delle 36 tappe. Il codice sta nell'archivio privato.</p>
+
+  <div class="card">
+    <span class="ico">&#127909;</span>
+    <span class="body"><span class="t">Camera che segue la linea</span><span class="d">La telecamera insegue il tracciato su GEOlayers da sola, senza keyframe a mano.</span></span>
+    <span class="tag">.jsx</span>
+  </div>
+
+  <div class="card">
+    <span class="ico">&#128506;&#65039;</span>
+    <span class="body"><span class="t">Rig minimappa</span><span class="d">Minimappa che si costruisce da sola dalle coordinate vere dei 36 kartodromi.</span></span>
+    <span class="tag">.jsx</span>
+  </div>
+
+  <div class="card">
+    <span class="ico">&#9992;&#65039;</span>
+    <span class="body"><span class="t">Voli tra tappe</span><span class="d">Genera le transizioni da una tappa all'altra in serie, tutte con lo stesso ritmo.</span></span>
+    <span class="tag">.jsx</span>
+  </div>
+
+  <div class="card">
+    <span class="ico">&#129529;</span>
+    <span class="body"><span class="t">Uniforma stili &amp; diagnostica</span><span class="d">Passa tutte le comp, allinea font e colori, e dice cosa &egrave; rotto prima del render.</span></span>
+    <span class="tag">.jsx</span>
+  </div>
+
+  <div class="card">
+    <span class="ico">&#9889;</span>
+    <span class="body"><span class="t">Render parallelo</span><span class="d">Spezza il render su pi&ugrave; istanze di aerender: circa 3 volte pi&ugrave; veloce.</span></span>
+    <span class="tag">shell</span>
+  </div>
+
+  <div class="card">
+    <span class="ico">&#127916;</span>
+    <span class="body"><span class="t">Timeline &amp; mogrt Premiere</span><span class="d">Monta la timeline, piazza i mogrt, mette marker e grading in automatico.</span></span>
+    <span class="tag">.jsx</span>
+  </div>
 
   <h2>Software</h2>
   <p class="note">Questi girano sul computer, non nel browser: da qui non si aprono. Il codice &egrave; al sicuro nell'archivio privato, e vanno rimessi a punto prima di riusarli.</p>
