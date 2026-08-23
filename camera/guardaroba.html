@@ -63,6 +63,34 @@ select{background:var(--surface2); border:1px solid var(--border); color:var(--i
 .insights{font-size:14px; color:var(--ink)}
 .insights li{margin:8px 0 8px 18px}
 .insights b{color:var(--accent)}
+
+.fadv>summary{display:none}
+@media (max-width:640px){
+  /* barra filtri: non piu' incollata a tutto schermo sopra i vestiti */
+  .filters{position:static; background:var(--bg); padding:10px 0 6px}
+  /* quando i filtri sono chiusi la barra e' bassa: puo' restare in cima senza coprire niente */
+  @supports selector(:has(*)){
+    .filters:has(.fadv:not([open])){position:sticky; top:0; z-index:20; padding-bottom:8px;
+      box-shadow:0 6px 12px -8px rgba(0,0,0,.9)}
+  }
+  #q{font-size:15px; padding:10px 12px}
+  /* due capi per riga, schede compatte: piu' roba a schermo */
+  .grid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:9px}
+  .card img{aspect-ratio:1/1}
+  .card .body{padding:7px 9px 9px}
+  .card .id{font-size:10px}
+  .card .t{font-size:13px; line-height:1.25; margin:1px 0 1px}
+  .card .b{font-size:11px; line-height:1.3}
+  .card .badge{font-size:10px; padding:1px 7px}
+  .card .flags{font-size:10.5px}
+  .count{margin:8px 0 4px}
+  .fadv>summary{display:inline-block; cursor:pointer; list-style:none;
+    font-size:13px; color:var(--ink2); background:var(--surface2);
+    border:1px solid var(--border); border-radius:999px; padding:7px 14px; margin:2px 0 8px}
+  .fadv>summary::-webkit-details-marker{display:none}
+  .fadv>summary::after{content:" ▾"}
+  .fadv[open]>summary::after{content:" ▴"}
+}
 @media (max-width:640px){ .modal{grid-template-columns:1fr} .chart-row .lab{width:110px; font-size:11.5px} }
 </style>
 </head>
@@ -87,6 +115,7 @@ select{background:var(--surface2); border:1px solid var(--border); color:var(--i
 
 <div class="filters">
   <input type="search" id="q" placeholder="Cerca: tipo, brand, note… (es. Stüssy, dolcevita, Vinted)">
+  <details class="fadv" open><summary>Filtri e colori</summary>
   <div class="frow" id="tierChips"></div>
   <div class="frow">
     <select id="gruppo"><option value="">Tutti i tipi</option></select>
@@ -99,6 +128,7 @@ select{background:var(--surface2); border:1px solid var(--border); color:var(--i
     <span class="chip" id="fExport">⬇️ Scarica il catalogo aggiornato</span>
   </div>
   <div class="frow" id="colorChips"></div>
+  </details>
 </div>
 
 <div class="count" id="count"></div>
@@ -304,6 +334,10 @@ function openEditModal(c){
   document.getElementById('overlay').classList.add('open');
 }
 init();
+</script>
+<script>
+(function(){var d=document.querySelector('.fadv');
+if(d&&window.matchMedia('(max-width:640px)').matches){d.open=false;}})();
 </script>
 </body>
 </html>
