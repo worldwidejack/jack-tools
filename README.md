@@ -7,6 +7,7 @@ Giochi, strumenti e progetti HTML costruiti da Jack con JackOS, messi online cos
 ### 🎲 Giochi
 | | Gioco | Cos'è |
 |---|---|---|
+| 🧔 | [PELO VERDE: Operazione Pripyat](https://worldwidejack.github.io/jack-tools/pelo-verde/) | Platform sparatutto online con Alfredo il nano, storia + festa con amici |
 | 🍷 | [La Ruota del Pre](https://worldwidejack.github.io/jack-tools/ruota-del-pre.html) | 5 giocatori, una ruota, zero pietà |
 | 🙊 | [Confessionale](https://worldwidejack.github.io/jack-tools/confessionale.html) | Confessioni, scandali e voti |
 | 🔥 | [Benzina](https://worldwidejack.github.io/jack-tools/benzina.html) | Il gioco che scalda |
