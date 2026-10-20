@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bro pubblica</title>
+<meta name="description" content="Bro pubblica: lo strumento personale che carica i video del canale YouTube Il Bro dell'NBA (@ilbrodellnba).">
+<meta name="theme-color" content="#0d0f13">
+<link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
+<style>
+  :root{ --bg:#0d0f13; --card:#161a21; --line:#252b36; --tx:#e9ebee; --dim:#8b93a1; --dim2:#666e7c; --acc:#7dd3a0; }
+  *{box-sizing:border-box}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--tx);
+        font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:36px 16px 60px; }
+  main{width:100%; max-width:640px; margin:0 auto}
+  h1{font-size:28px; margin:0 0 6px; letter-spacing:-.025em}
+  h2{font-size:12px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim2); margin:34px 0 10px; font-weight:700}
+  p,li{color:var(--tx); font-size:15px}
+  .sub{color:var(--dim); font-size:14.5px; margin:0 0 24px}
+  a{color:var(--acc)}
+  a.card{ display:flex; align-items:center; gap:15px; text-decoration:none; color:inherit;
+          background:var(--card); border:1px solid var(--line); border-radius:14px; padding:15px 17px; margin-bottom:10px; }
+  a.card:hover{border-color:var(--acc)}
+  .ico{font-size:24px; width:30px; text-align:center}
+  .t{font-weight:600; display:block} .d{color:var(--dim); font-size:13px; display:block}
+  .en{color:var(--dim); font-size:14px}
+  footer{color:var(--dim2); font-size:12px; margin-top:38px; border-top:1px solid var(--line); padding-top:18px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Bro pubblica</h1>
+  <p class="sub">Lo strumento personale che pubblica i video del canale YouTube <a href="https://www.youtube.com/@ilbrodellnba">Il Bro dell'NBA (@ilbrodellnba)</a>.</p>
+
+  <h2>Cos'&egrave;</h2>
+  <p>Il Bro dell'NBA &egrave; un canale di recap NBA in italiano, con un personaggio animato. Bro pubblica &egrave; il piccolo programma che gira sul computer del creatore del canale e, dopo la sua approvazione, carica il video del giorno sul canale @ilbrodellnba usando la YouTube Data API.</p>
+  <ul>
+    <li>Carica solo i video del canale Il Bro dell'NBA, sul canale Il Bro dell'NBA.</li>
+    <li>Legge solo il nome e l'handle del canale collegato, per controllare che sia quello giusto prima di caricare.</li>
+    <li>Non &egrave; un servizio aperto al pubblico: non ci si pu&ograve; iscrivere e non gestisce account di altre persone.</li>
+    <li>Non ha server n&eacute; database: le chiavi di accesso restano solo sul computer del creatore.</li>
+  </ul>
+
+  <h2>Documenti</h2>
+  <a class="card" href="privacy.html">
+    <span class="ico">&#128274;</span>
+    <span><span class="t">Privacy policy</span><span class="d">Quali dati usa l'app, dove restano, come revocare l'accesso.</span></span>
+  </a>
+  <a class="card" href="termini.html">
+    <span class="ico">&#128220;</span>
+    <span><span class="t">Termini di servizio</span><span class="d">Le condizioni d'uso dello strumento.</span></span>
+  </a>
+
+  <h2>In English</h2>
+  <p class="en">Bro pubblica is a personal tool used by the creator of the YouTube channel Il Bro dell'NBA (@ilbrodellnba), an Italian-language NBA recap channel. It runs on the creator's own computer and, after the creator approves each video, uploads it to that same channel through the YouTube Data API. It only reads the connected channel's name and handle to make sure it is the right one. It is not a public service: nobody can sign up, it does not manage anyone else's account, and it has no servers or databases. See the <a href="privacy.html#en">Privacy policy</a> and the <a href="termini.html#en">Terms of service</a>.</p>
+
+  <footer>Bro pubblica &middot; Il Bro dell'NBA &middot; aggiornato il 20 ottobre 2026</footer>
+</main>
+</body>
+</html>
