@@ -8,6 +8,7 @@ Giochi, strumenti e progetti HTML costruiti da Jack con JackOS, messi online cos
 | | Gioco | Cos'è |
 |---|---|---|
 | 🌊 | [MAREA](https://marea.stanza-idee.workers.dev/) | Arcipelago 3D pixel-art tra amici: isola che produce, minigiochi, barca. Anteprima, in costruzione fino a dicembre |
+| 🎨 | [MAREA · Prova dei look](https://worldwidejack.github.io/jack-tools/marea-look/?look=inchiostro) | Lo stesso porto in tre look da votare: [inchiostro](https://worldwidejack.github.io/jack-tools/marea-look/?look=inchiostro), [pixel](https://worldwidejack.github.io/jack-tools/marea-look/?look=pixel), [pixel + sprite](https://worldwidejack.github.io/jack-tools/marea-look/?look=sprite) |
 | 🧔 | [PELO VERDE: Operazione Pripyat](https://worldwidejack.github.io/jack-tools/pelo-verde/) | Platform sparatutto online con Alfredo il nano, storia + festa con amici |
 | 🍷 | [La Ruota del Pre](https://worldwidejack.github.io/jack-tools/ruota-del-pre.html) | 5 giocatori, una ruota, zero pietà |
 | 🙊 | [Confessionale](https://worldwidejack.github.io/jack-tools/confessionale.html) | Confessioni, scandali e voti |
