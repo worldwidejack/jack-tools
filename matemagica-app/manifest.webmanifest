@@ -10,8 +10,8 @@
   "background_color": "#0a134d",
   "theme_color": "#0a134d",
   "icons": [
-    { "src": "/icona-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icona-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icona-maschera-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/jack-tools/matemagica-app/icona-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/jack-tools/matemagica-app/icona-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/jack-tools/matemagica-app/icona-maschera-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
